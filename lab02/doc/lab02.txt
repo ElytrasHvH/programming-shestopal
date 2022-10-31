@@ -1,0 +1,134 @@
+Лабораторна робота N2 Шестопал Дмитро Олексійович
+Основи debug процессу
+1 Зареєструватися (якщо треба) на однієї з загально-доступних систем (рекомендовано), таких як gitlab, github та створити там приватний репозиторій за допомогою веб інтерфейсу проекту. Репозиторій повинен мати наступну назву: programing-FNAME, де: 
+    programing – Назва курсу (програмування);
+    FNAME – транслітероване прізвище студента, відповідно до правил згідно з постановою КМУ 2010р. Наприклад, Прізвище Давидов трансформується до Davydov. Таким чином, назва репозиторію буде "programing-davydov". 
+
+1.1 Зареєструвався під псевдонімом "ElytrasHVH"
+1.2 Зробив приватний репозиторій "programming-shestopal"
+
+2 Склонуватися з створеного репозиторія -> у процессі клонування було запитано логін так ключ аутентифікації
+
+3 Створити наступні каталоги в своєму репозиторію: lab02, lab02/src. Таким чином, у вашому проекті повинні бути наступні елементи:
+└── lab02
+    └── src
+Скопіювати наступні елементи:
+
+    файл .clang-format з проекта sample_project до кореня вашого репозиторія
+    файл .clang-tidy з проекта sample_project до кореня вашого репозиторія
+    файл .gitlab-ci.yml з проекта sample_project до кореня вашого репозиторія
+    файл Doxyfile з каталогу lab00 проекта sample_project до каталогу lab02 вашого репозиторія
+    файл Makefile з каталогу lab00 проекта sample_project до каталогу lab02 вашого репозиторія
+    файл README.md з каталогу lab00 проекта sample_project до каталогу lab02 вашого репозиторія
+    каталог src з каталогу lab00 проекта sample_project до каталогу lab02 вашого репозиторія
+
+Таким чином, у вашому проекті повинні бути наступні елементи:
+
+├── .clang-format
+├── .clang-tidy
+├── .gitlab-ci.yml
+├── README.md
+└── lab02
+    ├── Doxyfile
+    ├── Makefile
+    ├── README.md
+    └── src
+        ├── lib.c
+        ├── lib.h
+        └── main.c
+
+3.1 Переходимо до каталогу репозиторія:
+cd programming-shestopal
+створюємо каталоги mkdir lab02
+переходимо до каталогу: cd lab02
+створюємо каталог: mkdir src
+3.2 клонуємо файли: 
+3.2.1 cd -> cd sample_project для переходу до каталогу склонованного репозиторію sample_project
+3.2.2 cp .clang-format ~/programming-shestopal для клонування.
+повторити теж саме для .clang-tidy, gitlab-ci.yml
+3.2.3 cd lab00 для переходу до ~/sample_project/lab00
+3.2.4 cp Makefile(Doxyfile та README.md) ~/programming-shestopal/lab02 для клонування потрібних файлів
+3.2.5 cp src ~/programming-shestopal/lab02 -r для клонування каталогу та файлів у ньому
+3.2.6 Переверяємо: 
+1 cd -> cd/programming-shestopal
+2 tree
+──(elytras㉿elytras)-[~/programming-shestopal]
+└─$ tree -a
+.
+├── .clang-format
+├── .clang-tidy
+├── .gitlab-ci.yml
+└── lab02
+    ├── Doxyfile
+    ├── Makefile
+    ├── README.md
+    └── src
+        ├── lib.c
+        ├── lib.h
+        └── main.c
+
+
+   4 Зафіксувати зміни (за допомогою команди git commit) під назвою "Initial copy of sample_project". Зверніть увагу,
+
+    при виконанні будь-яких git операцій, потрібно знаходитись в каталозі вашого проекта;
+    необхідно дослідити роботу команди git commit, та внести текст повідомлення у рамках цієї ж команди;
+    перед безпоседенім виконанням команди git commit необхідно додати файли до git індексу. Для цього необхідно дослідити команду git add
+4.1 За допомогою git add додано: .clang-format .clang-tidy .gitlab-ci.yml
+4.2 Далі: git commit -m "Initial copy of sample_project"
+5. Змінена кількість тварин до 18-и, Додана Людина до списку	
+6. При вході у функцію main якщо перевіряти var то вихід буде таким:
+(lldb) var
+(animal[18]) animals = {
+  [0] = (type = CAT | MAN | 0xf0b6f8, height = 0, weight = 197)
+  [1] = (type = PIG, height = 4294958687, weight = 32767)
+  [2] = (type = CAT | MAN | 0xf7fdf7c0, height = 32767, weight = 2)
+  [3] = (type = PIG, height = 0, weight = 0)
+  [4] = (type = PIG, height = 0, weight = 0)
+  [5] = (type = PIG, height = 0, weight = 0)
+  [6] = (type = PIG, height = 0, weight = 0)
+  [7] = (type = PIG, height = 0, weight = 0)
+  [8] = (type = PIG, height = 0, weight = 0)
+  [9] = (type = PIG, height = 0, weight = 0)
+  [10] = (type = PIG, height = 0, weight = 0)
+  [11] = (type = PIG, height = 0, weight = 0)
+  [12] = (type = PIG, height = 0, weight = 0)
+  [13] = (type = PIG, height = 0, weight = 0)
+  [14] = (type = PIG, height = 0, weight = 0)
+  [15] = (type = PIG, height = 0, weight = 0)
+  [16] = (type = PIG, height = 0, weight = 0)
+  [17] = (type = PIG, height = 0, weight = 0)
+}
+після декількох step over (5)
+вихід данних такий: (animal[18]) animals = {
+  [0] = (type = COW, height = 99, weight = 61)
+  [1] = (type = COW, height = 101, weight = 8)
+  [2] = (type = CAT | MAN | 0xf7fdf7c0, height = 32767, weight = 2)
+  [3] = (type = PIG, height = 0, weight = 0)
+  [4] = (type = PIG, height = 0, weight = 0)
+  [5] = (type = PIG, height = 0, weight = 0)
+  [6] = (type = PIG, height = 0, weight = 0)
+  [7] = (type = PIG, height = 0, weight = 0)
+  [8] = (type = PIG, height = 0, weight = 0)
+  [9] = (type = PIG, height = 0, weight = 0)
+  [10] = (type = PIG, height = 0, weight = 0)
+  [11] = (type = PIG, height = 0, weight = 0)
+  [12] = (type = PIG, height = 0, weight = 0)
+  [13] = (type = PIG, height = 0, weight = 0)
+  [14] = (type = PIG, height = 0, weight = 0)
+  [15] = (type = PIG, height = 0, weight = 0)
+  [16] = (type = PIG, height = 0, weight = 0)
+  [17] = (type = PIG, height = 0, weight = 0)
+}
+(unsigned int) i = 1
+
+якщо скомпілювати файли без аргументу -g , вихід буде такий:
+* thread #1, name = 'a.out', stop reason = breakpoint 1.1
+    frame #0: 0x00005555555552f0 a.out`main
+a.out`main:
+->  0x5555555552f0 <+0>:  pushq  %rbp
+    0x5555555552f1 <+1>:  movq   %rsp, %rbp
+    0x5555555552f4 <+4>:  subq   $0xf0, %rsp
+    0x5555555552fb <+11>: movl   $0x0, -0x4(%rbp)
+
+різниця полягає у тому що якщо скомпілювати програму без данних відлагодження, вона буде легшою, проте якщо перевіряти її через дебагер, не буде інформації окрім адресів у памїяті.
+якщо скомпілювати програму з інформацією для відлагодження, вона буде важчею, повільнішею проте під час перевірки через дебагер зберігається інформація про імена алгоритів та змінних

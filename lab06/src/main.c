@@ -1,31 +1,34 @@
-// #include "stdio.h"
+#include "stdio.h"
 int main()
 {
-        int x= 3;
-       // scanf("%d", &x);
-        int mat1[x][x];
-        int mat2[x][x];
-        int i, j;
+
+        int x;
+        printf("Matrix dimenion is: ");
+        scanf("%d", &x);
+        int i,j,k, a[x][x], b[x][x];
+        printf("\n");
         for (i = 0; i < x; i++) {
                 for (j = 0; j < x; j++) {
-                        mat1[i][j] = i + 2 * j * j + 1;
+                        a[i][j] = (i+1)*j+i;
                 }
         }
-       /* for (i = 0; i < x; i++) {
+        for (i = 0; i < x; i++) {
                 for (j = 0; j < x; j++)
-                        printf("%d ", mat1[i][j]);
+                        printf("%d ", a[i][j]);
                 if (j == x) {
                         printf("\n");
                 }
-        }*/
+        }
         for (i = 0; i < x; i++) {
                 for (j = 0; j < x; j++) {
-                        mat2[i][j] = mat1[i][j] * mat1[j][i];
-                       // printf("%d ", mat2[i][j]);
-                         }
-               /* if (j==x) {
-                       printf("\n");
-                }*/
+                        b[i][j] = 0;
+                        for (k = 0; k < x; k++) {
+                                b[i][j] += a[i][k] * a[k][j];
+                        }
+                }
         }
-        return 0;
+        for (i=0;i<x;i++) {
+            for (j = 0; j<n; j++)
+return 0;
 }
+
