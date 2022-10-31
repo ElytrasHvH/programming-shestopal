@@ -6,8 +6,3 @@ int main()
 
         return c;
 }
-
-
-
-
-
