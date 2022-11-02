@@ -1,10 +1,9 @@
 int main()
 {
-	int x = 0;
+	int x = -1634;
 	int y = 648;
-	int i;
 	int z;
-	for (i=0; x != y;i++) {
+	for (int i=0; x != y;i++) {
 		if (x == 0) {
 			if (y > 0) {
 				x = y;

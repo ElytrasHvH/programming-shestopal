@@ -1,6 +1,6 @@
 int main()
 {
-	int x = 0;
+	int x = -1634;
 	int y = 648;
 	int z;
 	while (x != y) {
