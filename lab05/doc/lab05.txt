@@ -8,54 +8,54 @@
 x,y - числа для яких потрібно знайти НСД (int)
 дослідження результатів роботи:
 z - НСД  цих чісел
-Код (dowhile:
+Код dowhile:
+
 int main()
 {
-        int x = -1643;
-        int y = 0;
-        int z;
-        if (x == 0) {                           //
-                if (y > 0) {                    //
-                        x = y;                  //
-                } else {                        //
-                        x = -y;                 //
-                }                               //
-        } else if (y == 0) {                    //This all made for calculating gcd while one or both numbers are 0
-                if (x > 0) {                    //Also GCD is always >0 so made inverses to fix when one of numbers is 0 and other is negative
-                        y = x;                  //
-                } else {                        //
-                        x = -x;                 //
-                }                               //
-        } else if (x == 0 && y == 0) {          //
-                z = 0;                          //
-        } else {                                
-                do {
-                        if (x > y) // check if first number is bigger then second
-                        {
-                                if (y > 0) { //check if second number is positive
-                                        x -= y;
-                                } else // inversing number coz GCD will be same for them being positive
-                                {
-                                        y = -y;
-                                }
+	int x = -1634;
+	int y = 648;
+	int z;
+	do {
+		if (x == 0) {
+			if (y > 0) {
+				x = y;
+			} else {
+				x = -y;
+			}
+		} else if (y == 0) { //This all made for calculating gcd while one or both numbers are 0
+			if (x > 0) { //Also GCD is always >0 so made inverses to fix when one of numbers is 0 and other is negative
+				y = x;
+			} else {
+				x = -x;
+			}
+		} else if (x == 0 && y == 0) {
+			z = 0;
+		} else if (x > y) // check if first number is bigger then second
+		{
+			if (y > 0) { //check if second number is positive
+				x -= y;
+			} else // inversing number coz GCD will be same for them being positive
+			{
+				y = -y;
+			}
+		} else // we know that y>x and that x!=0 && y!=0 so this then
+		{
+			if (x > 0) //check if x positive
+			{
+				y -= x;
+			} else //same as in line 15
+			{
+				x = -x;
+			}
+		}
+	}
 
-                        } else // we know that y>x and that x!=0 && y!=0 so this then
-                        {
-                                if (x > 0) //check if x positive
-                                {
-                                        y -= x;
-                                } else //same as in line 15
-                                {
-                                        x = -x;
-                                }
-                        }
-                }
+	while (x != y);
 
-                while (x != y);
-        }
-        z = x; //set z to x (could've been y but i want x) and then will return it as an answer
-        return z;
+	z = x; //set z to x (could've been y but i want x) and then will return it as an answer
+	return z;
 }
+
 Для чисел -1634 та 638 очікуванний результат буде 2
 ставимо бреакпоінт на return z
 (lldb) var
@@ -63,8 +63,98 @@ int main()
 (int) y = 2
 (int) z = 2
 очікуванний результат отримано
-Якщо змінити під час виконання x або y на будь яке  число окрім 0 (після перевірок з нулем) то тоді буде знайден НСД для нових двох чисел.
+Якщо змінити під час виконання x або y на будь яке  число - буде знайдено результат для нових двух чисел.
+Працюэ і з 0 і з відїемними числами.
+Код for:
 
+int main()
+{
+	int x = -1634;
+	int y = 648;
+	int z;
+	for (int i=0; x != y;i++) {
+		if (x == 0) {
+			if (y > 0) {
+				x = y;
+			} else {
+				x = -y;
+			}
+		} else if (y == 0) { //This all made for calculating gcd while one or both numbers are 0
+			if (x > 0) { //Also GCD is always >0 so made inverses to fix when one of numbers is 0 and other is negative
+				y = x;
+			} else {
+				x = -x;
+			}
+		} else if (x == 0 && y == 0) {
+			z = 0;
+		} else if (x > y) // check if first number is bigger then second
+		{
+			if (y > 0) { //check if second number is positive
+				x -= y;
+			} else // inversing number coz GCD will be same for them being positive
+			{
+				y = -y;
+			}
+		} else // we know that y>x and that x!=0 && y!=0 so this then
+		{
+			if (x > 0) //check if x positive
+			{
+				y -= x;
+			} else //same as before
+			{
+				x = -x;
+			}
+		}
+	}
+	z = x; //set z to x (could've been y but i want x) and then will return it as an answer
+	return z;
+}
+у цьому варіанті є нова змінна - i, яка використовується для нескінченного циклу, поки не буде виконана основна умова.
+
+Код: whiledo
+int main()
+{
+	int x = -1634;
+	int y = 648;
+	int z;
+	while (x != y) {
+		if (x == 0) {
+			if (y > 0) {
+				x = y;
+			} else {
+				x = -y;
+			}
+		} else if (y == 0) { //This all made for calculating gcd while one or both numbers are 0
+			if (x > 0) { //Also GCD is always >0 so made inverses to fix when one of numbers is 0 and other is negative
+				y = x;
+			} else {
+				x = -x;
+			}
+		} else if (x == 0 && y == 0) {
+			z = 0;
+		} else if (x > y) // check if first number is bigger then second
+		{
+			if (y > 0) { //check if second number is positive
+				x -= y;
+			} else // inversing number coz GCD will be same for them being positive
+			{
+				y = -y;
+			}
+		} else // we know that y>x and that x!=0 && y!=0 so this then
+		{
+			if (x > 0) //check if x positive
+			{
+				y -= x;
+			} else //same as before
+			{
+				x = -x;
+			}
+		}
+	}
+	z = x; //set z to x (could've been y but i want x) and then will return it as an answer
+	return z;
+}
+у цьому варіанті якщо у вхідних данних будуть однакові числа то буде зроблено на (одну або дві, tbh не рахував)ітерації, вважаю що э найкращім варіантом виконання завдання
 Структура проекту лабораторної роботи:
 .
 ├── doc
