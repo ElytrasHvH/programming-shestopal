@@ -1,4 +1,4 @@
-#include "stdio.h"
+#include <stdio.h>
 int main()
 {
 	int x = -1;
@@ -10,10 +10,7 @@ int main()
 			printf("Dimension must be at least 1\n");
 		}
 	}
-	if (x == 0) {
-		return x * x;
-	}
-	int i, j, k, a[x][x], b[x][x];
+	int k, j, i, a[x][x], b[x][x];
 	printf("\n");
 	for (i = 0; i < x; i++) {
 		for (j = 0; j < x; j++) {
@@ -30,7 +27,7 @@ int main()
 	}
 	for (i = 0; i < x; i++) { //for every row
 		for (j = 0; j < x; j++) { //and every column
-			b[i][j] = 0;
+			b[0][0] = 0;
 			for (k = 0; k < x; k++) { //k being a counter to get numbers with a look of number(column's number) and (row's number)number
 				b[i][j] += a[i][k] * a[k][j]; //adding up because this how matrix multiplication works
 			}
@@ -44,6 +41,5 @@ int main()
 			printf("\n"); //dropping to next line to see matrix normally
 		}
 	}
-
 	return x;
 }
