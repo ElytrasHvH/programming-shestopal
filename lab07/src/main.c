@@ -25,12 +25,12 @@ int main()
 int sqmat(int k)
 {
 	int mat[k][k];
-	int kk = k*k;
+	int kk = k * k;
 	int mat2[kk];
 	int mat3[k][k];
-	mat3[0][0]=0;
-	for (int i = 0; i < k; i++) {					  //filling matrix (row)
-		for (int j = 0; j < k; j++) {				  //like this (column)
+	mat3[0][0] = 0;
+	for (int i = 0; i < k; i++) { //filling matrix (row)
+		for (int j = 0; j < k; j++) { //like this (column)
 			mat[i][j] = (rand() % (i * j + 3)) % (i + j + 3); //because i like chaos
 		}
 	}
@@ -38,19 +38,20 @@ int sqmat(int k)
 		for (int j = 0; j < k; j++) {
 			printf("%d ", mat[i][j]);
 		}
-	printf("\n");
+		printf("\n");
 	}
 	for (int i = 0; i < k; i++) { //for every row
 		for (int j = 0; j < k; j++) { //and every column
-			for (int s = 0; s < k; k++) { //s being a counter to get numbers with a look of number(column's number) and (row's number)number
+			for (int s = 0; s < k;
+			     k++) { //s being a counter to get numbers with a look of number(column's number) and (row's number)number
 				mat3[i][j] += mat[i][s] * mat[s][j]; //adding up because this how matrix multiplication works
 			}
 		}
-	return;
+		return;
+	}
 }
-
-int gcd(int x, int y)
-{
+	 int gcd(int x, int y)
+	{
 	int x1 = x;
 	int y1 = y;
 	while (x1 != y1) {
