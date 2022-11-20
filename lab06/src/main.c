@@ -41,5 +41,5 @@ int main()
 			printf("\n"); //dropping to next line to see matrix normally
 		}
 	}
-	return x;
+	return 0;
 }
