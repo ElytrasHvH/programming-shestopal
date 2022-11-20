@@ -1,54 +1,56 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-int sqmat(int k);
 int gcd(int x, int y);
+int **sqmat(int k);
 int main()
 {
 	srand(time(NULL)); //seed for rng  with an input of the currtime
 	int x = 1 +rand()%6; //using it to generate first number, using +1 to get nonzero value, limiting via % because i dont want to kms looking in the outpot
-	int y;
-	int gcdres; //this will be the result for gcd
+	int y,gcdres,**sqmat,**mat;
 	int k = x + 1; //this will be matrix's dimension. useless to square matrix with a  dimension of 1, so with k=x++ it will always be >=2
-	int mat[k]; //output matrix
 	y = rand() % x; //generating weirdly
-	y += rand() % (x + x); //second
-	y *= ((rand() % (x + x) * x) % 30) + 1; //number
-	gcdres = gcd(
-		x,
-		y); //assigning to result the output of gcd (fun fact, it will never be 0 with above inputs and also the only moment when x can be equal to y is when x is 1)
-	printf("For numbers:%d %d \ngcd is: %d \nfor matrix with a dimension of %d\nwith numbers:\n", x, y, gcdres, k);
-	k=sqmat(k);
+	y += rand() % (x + x); //second number
+	y *= ((rand() % (x + x) * x) % 30) + 1; //for gcd
+	gcdres = gcd(x,y); //assigning to result the output of gcd (fun fact, it will never be 0 with above inputs and also the only moment when x can be equal to y is when x is 1)
+	sqmat = **sqmat(k);
+	for (int i = 0; i < k; i++)
+		{
+		for (int j = 0; j < k; j++)
+			{
+			printf("%d ",sqmat[i][j]);
+			}
+		printf("\n");
+		}
+	printf("%d %d", gcdres ,sqmat);
 	return 0;
 }
-
-int sqmat(int k)
+int **sqmat(int k)
 {
-	int mat[k][k];
-	int kk = k*k;
-	int mat2[kk];
-	int mat3[k][k];
-	mat3[0][0]=0;
-	for (int i = 0; i < k; i++) {					  //filling matrix (row)
-		for (int j = 0; j < k; j++) {				  //like this (column)
-			mat[i][j] = (rand() % (i * j + 3)) % (i + j + 3); //because i like chaos
-		}
-	}
-	for (int i = 0; i < k; i++) {
-		for (int j = 0; j < k; j++) {
-			printf("%d ", mat[i][j]);
-		}
-	printf("\n");
-	}
-	for (int i = 0; i < k; i++) { //for every row
-		for (int j = 0; j < k; j++) { //and every column
-			for (int s = 0; s < k; k++) { //s being a counter to get numbers with a look of number(column's number) and (row's number)number
-				mat3[i][j] += mat[i][s] * mat[s][j]; //adding up because this how matrix multiplication works
-			}
-		}
-	return;
-}
+	int **mat;
+	int **sqmat1;
 
+	mat = malloc(sizeof(int *) *k);
+	sqmat1 = malloc(sizeof(int *) *k);
+
+	for (int i = 0; i < k; i++)
+		{
+		mat[i] = malloc(sizeof(int *) *k);
+		sqmat1[i] = malloc(sizeof(int *) *k);
+		};
+	for (int i = 0; i < k; i++)
+		{
+		for (int j = 0; j < k; j++)
+			{
+			mat[i][j]=rand()%(4+i+j);
+			sqmat1[i][j]=mat[i][j];
+			printf("%d ", mat[i][j]);
+			}
+		printf("\n");
+		}
+
+return sqmat1;
+}
 int gcd(int x, int y)
 {
 	int x1 = x;
