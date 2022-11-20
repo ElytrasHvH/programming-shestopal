@@ -14,11 +14,8 @@ int main()
                 b[0][0] = 0;
                 a[0][0] = 0;
 	}
-<<<<<<< HEAD
 	int k, j, i, a[x][x], b[x][x];
-=======
 	}
->>>>>>> 3311c47d1f369652e31821763d6fdf6564f03561
 	printf("\n");
 	for (int i = 0; i < x; i++) {
 		for (int j = 0; j < x; j++) {
@@ -35,10 +32,7 @@ int main()
 	}
 	for (i = 0; i < x; i++) { //for every row
 		for (j = 0; j < x; j++) { //and every column
-<<<<<<< HEAD
 			b[0][0] = 0;
-=======
->>>>>>> 3311c47d1f369652e31821763d6fdf6564f03561
 			for (k = 0; k < x; k++) { //k being a counter to get numbers with a look of number(column's number) and (row's number)number
 				b[i][j] += a[i][k] * a[k][j]; //adding up because this how matrix multiplication works
 			}

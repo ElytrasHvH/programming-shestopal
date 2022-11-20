@@ -42,12 +42,11 @@ int **sqmat1(int k)
 	for (int i = 0; i < k; i++) {
 		for (int j = 0; j < k; j++) {
 			mat[i][j] = rand() % (4 + i + j);
-			sqmat1[i][j] = mat[i][j];
 			printf("%d ", mat[i][j]);
 		}
 		printf("\n");
 	}
-
+	for (int i = 0; i < k; i++)
 	return sqmat1;
 }
 int gcd(int x, int y)
