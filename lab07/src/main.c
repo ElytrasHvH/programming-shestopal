@@ -43,11 +43,12 @@ int** sqmat1(int k)
 		}
 		printf("\n");
 	}
-	for (int i = 0; i < k; i++)
+	/* for (int i = 0; i < k; i++)
 		for (int j = 0; j < k; j++)
-			sqmat2[i][j] = 0;
+			sqmat2[i][j] = 0;*/
 	for (int i = 0; i < k; i++) {
 		for (int j = 0; j < k; j++) {
+			sqmat2[i][j] = 0;
 			 for (int s = 0; s < k; s++) {
 				sqmat2[i][j] += mat[i][s] * mat[s][j];
 			}
