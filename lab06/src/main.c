@@ -15,7 +15,7 @@ int main()
                 a[0][0] = 0;
 	}
 	int k, j, i, a[x][x], b[x][x];
-	}
+	
 	printf("\n");
 	for (int i = 0; i < x; i++) {
 		for (int j = 0; j < x; j++) {

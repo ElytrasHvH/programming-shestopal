@@ -2,52 +2,63 @@
 #include <stdlib.h>
 #include <time.h>
 int gcd(int x, int y);
-int **sqmat1(int k);
+int** sqmat1(int k);
 int main()
 {
 	srand(time(NULL)); //seed for rng  with an input of the currtime
-	int x = 1 +
-		rand() %
-			6; //using it to generate first number, using +1 to get nonzero value, limiting via % because i dont want to kms looking in the outpot
-	int y, gcdres, **sqmat, **mat;
-	int k = x + 1; //this will be matrix's dimension. useless to square matrix with a  dimension of 1, so with k=x++ it will always be >=2
-	y = rand() % x; //generating weirdly
-	y += rand() % (x + x); //second number
-	y *= ((rand() % (x + x) * x) % 30) + 1; //for gcd
-	gcdres = gcd(
-		x,
-		y); //assigning to result the output of gcd (fun fact, it will never be 0 with above inputs and also the only moment when x can be equal to y is when x is 1)
-	sqmat = **sqmat1(k);
+	int x = 1 +rand() %6; //using it to generate first number, using +1 to get nonzero value, limiting via % because i dont want to kms looking in the outpot
+	int k = x+1; //this will be matrix's dimension. useless to square matrix with a  dimension of 1, so with k=x++ it will always be >=2
+	int y, gcdres, **sqmat;
+	y = ((rand() % x) + rand() % (2 * x)) * ((rand() % (2 * x*x)) % 30)%(x*x+1); //generating weirdly second number for gcd
+	gcdres = gcd(x,y); //assigning to result the output of gcd (it will never be 0)
+	printf("for %d and %d GCD is %d\n",x,y,gcdres);	
+	sqmat = sqmat1(k);
+	printf("squared matrix will be:\n");
 	for (int i = 0; i < k; i++) {
 		for (int j = 0; j < k; j++) {
-			printf("%d ", sqmat[i][j]);
-		}
-		printf("\n");
-	}
-	printf("%d %d", gcdres, sqmat);
-	return 0;
-}
-int **sqmat1(int k)
-{
-	int **mat;
-	int **sqmat1;
-
-	mat = malloc(sizeof(int *) * k);
-	sqmat1 = malloc(sizeof(int *) * k);
-
-	for (int i = 0; i < k; i++) {
-		mat[i] = malloc(sizeof(int *) * k);
-		sqmat1[i] = malloc(sizeof(int *) * k);
-	};
-	for (int i = 0; i < k; i++) {
-		for (int j = 0; j < k; j++) {
-			mat[i][j] = rand() % (4 + i + j);
-			printf("%d ", mat[i][j]);
+			printf("%d\t", sqmat[i][j]);
 		}
 		printf("\n");
 	}
 	for (int i = 0; i < k; i++)
-	return sqmat1;
+		free(sqmat[i]);
+	free(sqmat);
+		return 0;
+
+}
+int** sqmat1(int k)
+{
+	int **mat = (int **)malloc(sizeof(int *) * k);
+	for (int i = 0; i < k; i++)
+		mat[i] = (int *)malloc(sizeof(int)*k);
+	int **sqmat2 = (int **)malloc(sizeof(int *) * k);
+	for (int i = 0; i < k; i++) {
+		sqmat2[i] = (int *)malloc(sizeof(int) * k);
+	}
+		printf("for input matrix with the dimension of %d and numbers\n", k);
+	for (int i = 0; i < k; i++) {
+		for (int j = 0; j < k; j++) {
+			mat[i][j] = rand() % (4 + i + j); //filling input matrix with stuff
+			printf("%d\t", mat[i][j]);
+		}
+		printf("\n");
+	}
+	for (int i = 0; i < k; i++)
+		for (int j = 0; j < k; j++)
+			sqmat2[i][j] = 0;
+	for (int i = 0; i < k; i++) {
+		for (int j = 0; j < k; j++) {
+			 for (int s = 0; s < k; s++) {
+				sqmat2[i][j] += mat[i][s] * mat[s][j];
+			}
+			//printf("%d ", sqmat2);
+		}
+		//printf("\n");
+	}
+	for (int i=0; i < k; i++)
+		free(mat[i]);
+	free(mat);
+	return sqmat2;
 }
 int gcd(int x, int y)
 {
