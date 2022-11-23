@@ -10,6 +10,13 @@ int main()
 	int k = x+1; //this will be matrix's dimension. useless to square matrix with a  dimension of 1, so with k=x++ it will always be >=2
 	int y, gcdres, **sqmat;
 	y = ((rand() % x) + rand() % (2 * x)) * ((rand() % (2 * x*x)) % 30)%(x*x+1); //generating weirdly second number for gcd
+	//printf("2 GCD numbers:\n");
+	//scanf("%d%d", &x,&y);
+	//k = 0;
+	//printf("matrix dimension will be:\n");
+	//while (k < 1) {
+	//	scanf("%d", &k);
+	//}
 	gcdres = gcd(x,y); //assigning to result the output of gcd (it will never be 0)
 	printf("for %d and %d GCD is %d\n",x,y,gcdres);	
 	sqmat = sqmat1(k);
@@ -28,24 +35,28 @@ int main()
 }
 int** sqmat1(int k)
 {
-	int **mat = (int **)malloc(sizeof(int *) * k);
+	 int **mat = (int **)malloc(sizeof(int *) * k); //alloc memory for array of pointers to arrays (input)
 	for (int i = 0; i < k; i++)
-		mat[i] = (int *)malloc(sizeof(int)*k);
-	int **sqmat2 = (int **)malloc(sizeof(int *) * k);
-	for (int i = 0; i < k; i++) {
-		sqmat2[i] = (int *)malloc(sizeof(int) * k);
-	}
+		mat[i] = (int *)malloc(sizeof(int)*k); //alloc memory for arrays (input)
+	int **sqmat2 = (int **)malloc(sizeof(int *) * k); //alloc memory for array of pointers to arrays (output)
+	for (int i = 0; i < k; i++) 
+		sqmat2[i] = (int *)malloc(sizeof(int) * k); //alloc memory for arrays (output)
 		printf("for input matrix with the dimension of %d and numbers\n", k);
-	for (int i = 0; i < k; i++) {
+	//for (int i = 0; i < k; i++) {
+		//for (int j = 0; j < k; j++) {
+			//scanf("%d",&mat[i][j]); //filling input matrix with stuff
+			//printf("%d\t", mat[i][j]);
+		//}
+		//printf("\n");
+	//}
+	 for (int i = 0; i < k; i++) {
 		for (int j = 0; j < k; j++) {
 			mat[i][j] = rand() % (4 + i + j); //filling input matrix with stuff
 			printf("%d\t", mat[i][j]);
 		}
 		printf("\n");
 	}
-	/* for (int i = 0; i < k; i++)
-		for (int j = 0; j < k; j++)
-			sqmat2[i][j] = 0;*/
+	
 	for (int i = 0; i < k; i++) {
 		for (int j = 0; j < k; j++) {
 			sqmat2[i][j] = 0;
