@@ -17,6 +17,6 @@ check:
 	clang-tidy src/*.c  -checks=-readability-uppercase-literal-suffix,-readability-magic-numbers,-clang-analyzer-deadcode.DeadStores,-clang-analyzer-security.insecureAPI.rand
 	rm -rf src/*.dump
 doxygen:
-	doxygen
+	doxygen Doxyfile
 all: clean prep compile check doxygen
 

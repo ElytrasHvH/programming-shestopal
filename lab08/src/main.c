@@ -1,169 +1,138 @@
 /*!
-\mainpage 
-# Загальне завдання
-Для лабораторної роботи "Функції" необхідно додати можливість генерації Doxygen документації.
-*/
+  \mainpage
+  # Лабораторна робота №8
+ 
+  \author Шестопал Дмитро:КН-922Б
+  \date 07-12-20
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-/*!
-\brief Найбільший спільний дільник
-\param int x, int y Вхідні числа для яких буде розраховуватися
-\return Значення НСД
-\brief Вхідні параметри псевдовипадкові(1) і користувача(2)
-\code
-int x = 1 +rand() %6; //using it to generate first number, using +1 to get nonzero value, limiting via % because i dont want to kms looking in the output
-int y = ((rand() % x) + rand() % (2 * x)) * ((rand() % (2 * x * x)) % 30) % (x * x + 1); //generating weirdly second number for gcd
+ /*!
+\file main.c
+\brief Головний файл\n
+Це файл, який містить точку входу,
+виклики функцій gcd,**sqmat1 та деякі значення для аргументів цих функцій.
 
-printf("2 GCD numbers:\n");
-	scanf("%d%d", &x, &y);
-\endcode
-\brief Перевірка на тривіальне рішення
-\code
-if (x1 < 0) {
-		x1 = -x1; //GCD for negative numbers is same as for positive, so inversing
-	}
-	if (y1 < 0) {
-		y1 = -y1;
-	}
-	if (x1 == y1) {
-		return x1;
-	}
-	if (y1 == 0) {
-		return x1;
-	}
-	if (x1 == 0) {
-		return y1;
-	}
-\endcode
-\brief Пошук не тривіального рішення
-\code
-while (x1 != y1) {
-		if (x1 > y1) {
-			x1 -= y1;
-		} else {
-			y1 -= x1;
-		}
-	}
-	return x1;
-\endcode
+*/
+/*!
+\briefНСД (Найбільший Спільний Дільник)
+
+\param x1 дорівнює значенню x який було передано функції (локальна змінна)
+\param y1 дорівнює значееню y який було передано функції (локальна змінна)
+
+-Перевірка на від'ємність обох чисел, якщо число від'ємне - інветуємо
+
+-Перевірки на тривіальні рішення (число дорівнюють один одному, 1 число 0 або 1)
+
+-Якщо не було знайдено такого числа то пошук НСД
+\return x1 який є НСД x та y
 */
 int gcd(int x, int y);
 /*!
-\brief Возведення матриці до квадрату
-\param int k - Розмірність матриці (генерується випадково, або може буде задано користувачем)
-у середині функції матриця або згенерується сама випадково, або значення можуть бути заданні користувачем
-\return вказівник на масив вказівників на масив значень
-\brief 2 виду заповнення матриці; перший - користувачем, другий - псевдовипадково
-\code
-for (int i = 0; i < k; i++) {
-	for (int j = 0; j < k; j++) {
-	scanf("%d",&mat[i][j]); //filling input matrix with stuff
-	printf("%d\t", mat[i][j]);
-	}
-	printf("\n");
-	}
+\brief Піднесення матриці до квадрату
 
-for (int i = 0; i < k; i++) {
-		for (int j = 0; j < k; j++) {
-			mat[i][j] = rand() % (4 + i + j); //filling input matrix with stuff
-			printf("%d\t", mat[i][j]);
-		}
-		printf("\n");
-	}
-\endcode
+\param k Єдиний параметр котрий передається у функцію, є розміром матриці
 
-\brief розрахунок матриці
-\code
-for (int i = 0; i < k; i++) {
-		for (int j = 0; j < k; j++) {
-			sqmat2[i][j] = 0;
-			for (int s = 0; s < k; s++) {
-				sqmat2[i][j] += mat[i][s] * mat[s][j];
-			}
-		}
-	}
-\endcode
+- \param**mat - вказівник на массив вказівників на массиви значень, вхідна матриця
 
+- \param**sqmat2 - вказівник на массив вказівників на массиви значень, матриця яка буде приймати результат
+
+- За допомогою scanf або псевдовипадкової генерації чисел rand() mat[k][k] приймає значення чисел з яких состоїть матриця
+
+\return вказівник на массив массивів
 */
 int **sqmat1(int k);
-/*!
-основна функція
-\return 0 На коректне завершення програми
-*/
-int main()
-{
-	srand((unsigned int)time(NULL)); //seed for rng  with an input of the currtime
-	int x = 1 +
-		rand() %
-			6; //using it to generate first number, using +1 to get nonzero value, limiting via % because i dont want to kms looking in the output
-	int y = ((rand() % x) + rand() % (2 * x)) * ((rand() % (2 * x * x)) % 30) % (x * x + 1); //generating weirdly second number for gcd
 
-	int gcdres, **sqmat;
-	printf("2 GCD numbers:\n");
-	scanf("%d%d", &x, &y);
-	int k = x + 1; //this will be matrix's dimension.
-	if (k < 2 || k > 6) {
-		k = 2 + rand() % 5;
-	} //useless|impossible to square matrix with dimension <2, making sure its at least 2, and limiting to 6, because it'll be too big else
+/*!
+Основна функція
+\brief Є точкою входу там має визови функцій **sqmat1 та gcd
+
+\param x Перше число для якого розраховувати НСД може бути задано користувачем або зегенроване само
+\param y Друге число для якого розраховувати НСД може бути задано користувачем або зегенроване само
+\param k Розмір матриці
+\param gcdres Змінна який призначається значення з функії gcd
+\param **sqmat Вказівник на який виклакається функція множення матриць
+
+
+*/
+int main(int argc,char **argv)
+{
+
+	srand((unsigned int)time(NULL));
+	int x,y,k,gcdres, **sqmat;
+	if(argc==2) {
+	x=atoi(argv[1]);
+	y = ((rand()%(1+10*x)) + rand() % (1+2 * x)) * ((rand() % (1+2 * x * x)) % 30) % (x * x + 1);
+	} 
+	else if(argc>2) {
+	x=atoi(argv[1]);
+	y=atoi(argv[2]);	
+	}
+	else {
+	x = (rand() %6);
+	y = ((rand() % (1+10*x)) + rand()%(1+2 * x)) * ((rand() % (1+2 * x * x+1)) % 30) % (1+x * x + 1);
+	} 
+	 k = (2+rand()%9); //This is matrix's dimension. Generated and locked to 10, otherwise its too big to see	
 	/*k = 0;
-	printf("matrix dimension will be:\n");
+	printf("Set matrix dimension (Only > 1 allowed):\n");
 	while (k < 1) {
 		scanf("%d", &k);
 	}*/
-	gcdres = gcd(x, y); //gets value from functionz
-	printf("for %d and %d GCD is %d\n", x, y, gcdres);
-	sqmat = sqmat1(k);
-	printf("squared matrix will be:\n");
+	gcdres = gcd(x, y); //call for function to find GCD
+	printf("GCD of %d and %d is %d\n", x, y, gcdres);
+	sqmat = sqmat1(k); //call for function to get matrix
+	/*printf("squared matrix will be:\n");
 	for (int i = 0; i < k; i++) {
 		for (int j = 0; j < k; j++) {
 			printf("%d\t", sqmat[i][j]);
 		}
 		printf("\n");
-	}
+	}*/
 	for (int i = 0; i < k; i++) {
 		free(sqmat[i]);
 	}
 	free(sqmat);
-/**Очистка пам'яті
-\code
-for (int i = 0; i < k; i++) {
-		free(sqmat[i]);
-	}
-	free(sqmat);
-\endcode
-*/
+
 	return 0;
+
 }
 int **sqmat1(int k)
 {
-	int **mat = (int **)malloc(sizeof(int *) * (unsigned long)k); //alloc memory for array of pointers to arrays (input) 
+	int **mat;
+	int **sqmat2;
+	mat = (int **)malloc(sizeof(int *) * (unsigned long)k); //alloc memory for array of pointers to arrays (input) 
 	for (int i = 0; i < k; i++) {
 		mat[i] = (int *)malloc(sizeof(int) * (unsigned long)k); //alloc memory for arrays (input)
 	}
-	int **sqmat2 = (int **)malloc(sizeof(int *) * (unsigned long)k); //alloc memory for array of pointers to arrays (output)
+	sqmat2 = (int **)malloc(sizeof(int *) * (unsigned long)k); //alloc memory for array of pointers to arrays (output)
 	for (int i = 0; i < k; i++) {
 		sqmat2[i] = (int *)malloc(sizeof(int) * (unsigned long)k); //alloc memory for arrays (output)
 	}
-	printf("for input matrix with the dimension of %d and numbers\n", k);
+	for (int i = 0; i < k; i++) {
+		for (int j = 0; j < k; j++) {
+			mat[i][j] = rand() % (4 + i + j); //filling input matrix with random numbers
+			sqmat2[i][j] = 0;
+			//printf("%d\t", mat[i][j]);
+		}
+		//printf("\n");
+	}
+	/*printf("Write your numbers for square matrix with the size of %d\n", k);
 	for (int i = 0; i < k; i++) {
 	for (int j = 0; j < k; j++) {
 	scanf("%d",&mat[i][j]); //filling input matrix with stuff
-	printf("%d\t", mat[i][j]);
-	}
-	printf("\n");
-	}
+	}*/
+	
+	/*printf("This is Your matrix\n");
 	for (int i = 0; i < k; i++) {
 		for (int j = 0; j < k; j++) {
-			mat[i][j] = rand() % (4 + i + j); //filling input matrix with stuff
 			printf("%d\t", mat[i][j]);
 		}
 		printf("\n");
-	}
+	}*/
 
 	for (int i = 0; i < k; i++) {
 		for (int j = 0; j < k; j++) {
-			sqmat2[i][j] = 0;
 			for (int s = 0; s < k; s++) {
 				sqmat2[i][j] += mat[i][s] * mat[s][j];
 			}
@@ -174,14 +143,6 @@ int **sqmat1(int k)
 	}
 	free(mat);
 
-	/**Очистка пам'яті
-	\code
-	for (int i = 0; i < k; i++) { 
-		free(mat[i]);
-	}
-	free(mat);
-	\endcode
-	*/
 	return sqmat2;
 }
 int gcd(int x, int y)
@@ -194,13 +155,10 @@ int gcd(int x, int y)
 	if (y1 < 0) {
 		y1 = -y1;
 	}
-	if (x1 == y1) {
+	if (y1 == 0||y1==1||x1==y1) {
 		return x1;
 	}
-	if (y1 == 0) {
-		return x1;
-	}
-	if (x1 == 0) {
+	if (x1 == 0||x1==1) {
 		return y1;
 	}
 	while (x1 != y1) {
