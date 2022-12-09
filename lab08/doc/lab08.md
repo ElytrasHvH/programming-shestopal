@@ -29,7 +29,7 @@
 - Якщо жодного числа не буде - програма згенерує два числа сама  
   
 ***Опис логічної структури***   
-![Programm Structure](../doc/assets/Program structure.png)
+![Programm Structure](../doc/assets/Program_structure.png)
 
 ***Вміст файлу main.c***
 Основний файл.
@@ -59,30 +59,35 @@
 1. main
 
 ```
-    if(argc==2) {
+	int x, y, k, gcdres, **sqmat;
+	srand((unsigned int)time(NULL));
+	x = (rand() % 6);
+	y = ((rand() % (1 + 10 * x)) + rand() % (1 + 2 * x)) * ((rand() % (1 + 2 * x * x + 1)) % 30)
+	k = (2 + rand() % 9);
+	if(argc==2) {
 	x=atoi(argv[1]);
-	y = ((rand() %(10*x)) + rand() % (2 * x)) * ((rand() % (2 * x * x)) % 30) % (x * x + 1);
 	} 
 	else if(argc>2) {
 	x=atoi(argv[1]);
 	y=atoi(argv[2]);	
 	}
-	else {
-	x = (rand() %6);
-	y = ((rand() % (10*x)) + rand() % (2 * x)) * ((rand() % (2 * x * x)) % 30) % (x * x + 1);
-	} 
-	 k = (2+rand()%9); 
-    gcdres = gcd(x, y); 
-    sqmat = sqmat1(k); 
+	gcdres = gcd(x, y);
+	sqmat = sqmat1(k);
+	for (int i = 0; i < k; i++) {
+		free(sqmat[i]);
+	}
+	free(sqmat);
+
+	return 0;
 ```
-![main function](../doc/assets/function - main.png)
+![main function](../doc/assets/function_main.png)
  
 2. gcd
 :Приймає x та y та присвоює їх значення локальним змінним x1, y1  
 Спочатку йде перевірка на тривіальні рішення з поверненням результату якщо така відповідь знайдена
 ```  
   if (x1 < 0) {
-		x1 = -x1; //GCD for negative numbers is same as for positive, so inversing
+		x1 = -x1;
 	}
 	if (y1 < 0) {
 		y1 = -y1;
@@ -105,7 +110,7 @@
 	}
     return x1;
 ```
-![gcd function](../doc/assets/function - gcd.png)
+![gcd function](../doc/assets/function_gcd.png)
 
 3. sqmat  
 :Приймає k який буде виступати у ролі розміру квадратної матриці  
@@ -117,20 +122,18 @@
 
 Виділає пам'ять під массиви  
 ```  
-    mat = (int **)malloc(sizeof(int *) * (unsigned long)k); //alloc memory for array of pointers to arrays (input) 
+	mat = (int **)malloc(sizeof(int *) * (unsigned long)k);
+	sqmat2 = (int **)malloc(sizeof(int *) * (unsigned long)k);
 	for (int i = 0; i < k; i++) {
-		mat[i] = (int *)malloc(sizeof(int) * (unsigned long)k); //alloc memory for arrays (input)
-	}
-	sqmat2 = (int **)malloc(sizeof(int *) * (unsigned long)k); //alloc memory for array of pointers to arrays (output)
-	for (int i = 0; i < k; i++) {
-		sqmat2[i] = (int *)malloc(sizeof(int) * (unsigned long)k); //alloc memory for arrays (output)
+		mat[i] = (int *)malloc(sizeof(int) * (unsigned long)k);
+		sqmat2[i] = (int *)malloc(sizeof(int) * (unsigned long)k);
 	}
 ``` 
 Заповнює початковий массив, та вихідний массив  
 ```  
 	for (int i = 0; i < k; i++) {
 		for (int j = 0; j < k; j++) {
-			mat[i][j] = rand() % (4 + i + j); //filling input matrix with random numbers
+			mat[i][j] = rand() % (4 + i + j);
 			sqmat2[i][j] = 0;
 			//printf("%d\t", mat[i][j]);
 		}
@@ -157,14 +160,14 @@
 
 	return sqmat2;  
 ```
-![sqmat2 function](../doc/assets/function - sqmat2.png)
+![sqmat2 function](../doc/assets/function_sqmat2.png)
 
 ##Використання
 1. Встановивши попредньо lldb або інший дебагер, та скомпілювавши программу з флагом (для clang) -g  
 запустити программу з або без аргументів
-![without inputs](../doc/assets/no inputs.png)
-![1 input](../doc/assets/1 input.png)
-![2 inputs](../doc/assets/2 inputs.png)
+![without inputs](../doc/assets/no_inputs.png)
+![1 input](../doc/assets/1_input.png)
+![2 inputs](../doc/assets/2_inputs.png)
 2. Встановити бреакпоінт на строці 92 
 `b 92`
 3. Перевірити змінні 
@@ -177,6 +180,6 @@ k - розмір матриці.
 де замість k треба написати значення k а x - значення від 0 до k-1 що будуть показувати значення у строках рівним x+1 (якщо переводити на язик математики) тобто   
 `parray "a" sqmat[0]` покаже перші a значень у першій строці матриці (якщо a = k,покаже усю строку)
 якщо треба дізнатися значення конкретного номеру можно використати var mat[a][b], де 0<=(a,b)<k
-![matrix](../doc/assets/parray use.png)
+![matrix](../doc/assets/parray_use.png)
 
 ##Висновки У цій роботі було перетворено лабораторні проекти №5 та №6 для використання функцій. Було набуто навичок роботи з функціями, їх декларація, реалізація та виклик. Під час тестування програми були отримані результати функції gcd - Найбільший Спільний Дільник (Отримання аргументів через командну страку), і робота функції **sqmat1 - генерація матриці та розрахунок квадрату цієї матриці.

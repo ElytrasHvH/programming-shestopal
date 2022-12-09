@@ -58,29 +58,25 @@ int **sqmat1(int k);
 */
 int main(int argc,char **argv)
 {
-
+	int x, y, k, gcdres, **sqmat;
 	srand((unsigned int)time(NULL));
-	int x,y,k,gcdres, **sqmat;
+	x = (rand() % 6);
+	y = ((rand() % (1 + 10 * x)) + rand() % (1 + 2 * x)) * ((rand() % (1 + 2 * x * x + 1)) % 30) % (1 + x * x + 1);
+	k = (2 + rand() % 9); //This is matrix's dimension. Generated and locked to 10, otherwise its too big to see	
 	if(argc==2) {
 	x=atoi(argv[1]);
-	y = ((rand()%(1+10*x)) + rand() % (1+2 * x)) * ((rand() % (1+2 * x * x)) % 30) % (x * x + 1);
 	} 
 	else if(argc>2) {
 	x=atoi(argv[1]);
 	y=atoi(argv[2]);	
 	}
-	else {
-	x = (rand() %6);
-	y = ((rand() % (1+10*x)) + rand()%(1+2 * x)) * ((rand() % (1+2 * x * x+1)) % 30) % (1+x * x + 1);
-	} 
-	 k = (2+rand()%9); //This is matrix's dimension. Generated and locked to 10, otherwise its too big to see	
 	/*k = 0;
 	printf("Set matrix dimension (Only > 1 allowed):\n");
 	while (k < 1) {
 		scanf("%d", &k);
 	}*/
 	gcdres = gcd(x, y); //call for function to find GCD
-	printf("GCD of %d and %d is %d\n", x, y, gcdres);
+	//printf("GCD of %d and %d is %d\n", x, y, gcdres);
 	sqmat = sqmat1(k); //call for function to get matrix
 	/*printf("squared matrix will be:\n");
 	for (int i = 0; i < k; i++) {
