@@ -133,10 +133,12 @@ int **sqmat1(int k)
 {
 	int **mat;
 	int **sqmat2;
-	mat = (int **)malloc(sizeof(int *) * (unsigned long)k); //alloc memory for array of pointers to arrays (input)
-	sqmat2 = (int **)malloc(sizeof(int *) * (unsigned long)k); //alloc memory for array of pointers to arrays (output)
+	mat = (int **)malloc(sizeof(int *) * (unsigned long)k); //alloc memory for array of pointers to arrays (input) 
 	for (int i = 0; i < k; i++) {
 		mat[i] = (int *)malloc(sizeof(int) * (unsigned long)k); //alloc memory for arrays (input)
+	}
+	sqmat2 = (int **)malloc(sizeof(int *) * (unsigned long)k); //alloc memory for array of pointers to arrays (output)
+	for (int i = 0; i < k; i++) {
 		sqmat2[i] = (int *)malloc(sizeof(int) * (unsigned long)k); //alloc memory for arrays (output)
 	}
 	for (int i = 0; i < k; i++) {
