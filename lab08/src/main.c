@@ -56,43 +56,79 @@ int **sqmat1(int k);
 
 
 */
-int main(int argc,char **argv)
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include "func.h"
+
+int main(int argc, char **argv)
 {
-	int x, y, k, gcdres, **sqmat;
+	int x, y, Size, GCDRes, **MatInput, **MatOutput;
 	srand((unsigned int)time(NULL));
 	x = (rand() % 6);
 	y = ((rand() % (1 + 10 * x)) + rand() % (1 + 2 * x)) * ((rand() % (1 + 2 * x * x + 1)) % 30) % (1 + x * x + 1);
-	k = (2 + rand() % 9); //This is matrix's dimension. Generated and locked to 10, otherwise its too big to see	
-	if(argc==2) {
-	x=atoi(argv[1]);
-	} 
-	else if(argc>2) {
-	x=atoi(argv[1]);
-	y=atoi(argv[2]);	
+	Size = (2 + rand() % 9); // This is the matrix's dimension. Generated and locked to 10, otherwise it's too big to see
+
+	if (argc == 2) {
+		x = atoi(argv[1]);
+	} else if (argc > 2) {
+		x = atoi(argv[1]);
+		y = atoi(argv[2]);
 	}
-	/*k = 0;
-	printf("Set matrix dimension (Only > 1 allowed):\n");
-	while (k < 1) {
-		scanf("%d", &k);
-	}*/
-	gcdres = gcd(x, y); //call for function to find GCD
-	//printf("GCD of %d and %d is %d\n", x, y, gcdres);
-	sqmat = sqmat1(k); //call for function to get matrix
-	/*printf("squared matrix will be:\n");
-	for (int i = 0; i < k; i++) {
-		for (int j = 0; j < k; j++) {
-			printf("%d\t", sqmat[i][j]);
+
+	/*Size = 0;
+    printf("Set matrix dimension (Only > 1 allowed):\n");
+    while (Size < 1) {
+        scanf("%d", &Size);
+    }*/
+
+	GCDRes = GCD(x, y); // Call the function to find GCD
+
+	//printf("GCD of %d and %d is %d\n", x, y, GCDRes);
+
+	// Allocate memory for MatInput and MatOutput matrices
+	MatInput = (int **)malloc(sizeof(int *) * Size);
+	MatOutput = (int **)malloc(sizeof(int *) * Size);
+	for (int i = 0; i < Size; i++) {
+		MatInput[i] = (int *)malloc(sizeof(int) * Size);
+		MatOutput[i] = (int *)malloc(sizeof(int) * Size);
+	}
+
+	// Initialize MatInput matrix with random values and MatOutput matrix with 0
+	for (int i = 0; i < Size; i++) {
+		for (int j = 0; j < Size; j++) {
+			MatInput[i][j] = rand() % 11;
+			printf("%d\t", MatInput[i][j]);
+			MatOutput[i][j] = 0;
 		}
 		printf("\n");
-	}*/
-	for (int i = 0; i < k; i++) {
-		free(sqmat[i]);
 	}
-	free(sqmat);
+	printf("\n");
+
+	// Call the SquareMat function to perform matrix calculations
+	MatOutput = SquareMat(MatInput, MatOutput, Size);
+
+	// Print the resulting MatOutput matrix
+	for (int i = 0; i < Size; i++) {
+		for (int j = 0; j < Size; j++) {
+			printf("%d\t", MatOutput[i][j]);
+		}
+		printf("\n");
+	}
+
+	// Free dynamically allocated memory
+	for (int i = 0; i < Size; i++) {
+		free(MatInput[i]);
+		free(MatOutput[i]);
+	}
+	free(MatInput);
+	free(MatOutput);
 
 	return 0;
-
 }
+
+
 int **sqmat1(int k)
 {
 	int **mat;
@@ -139,22 +175,33 @@ int **sqmat1(int k)
 
 	return sqmat2;
 }
+/**
+ * @brief Знаходить найбільший спільний дільник (НСД) двох чисел.
+ * 
+ * @param x Перше число.
+ * @param y Друге число.
+ * @return Найбільший спільний дільник.
+ */
 int gcd(int x, int y)
 {
 	int x1 = x;
 	int y1 = y;
+
+	// Handling negative numbers
 	if (x1 < 0) {
-		x1 = -x1; //GCD for negative numbers is same as for positive, so inversing
+		x1 = -x1; // GCD for negative numbers is the same as for positive, so we invert it
 	}
 	if (y1 < 0) {
 		y1 = -y1;
 	}
-	if (y1 == 0||y1==1||x1==y1) {
+	// Base cases
+	if (y1 == 0 || y1 == 1 || x1 == y1) {
 		return x1;
 	}
-	if (x1 == 0||x1==1) {
+	if (x1 == 0 || x1 == 1) {
 		return y1;
 	}
+	// Computing GCD using the Euclidean algorithm
 	while (x1 != y1) {
 		if (x1 > y1) {
 			x1 -= y1;
