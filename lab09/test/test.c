@@ -25,19 +25,16 @@ START_TEST(test_SquareMat)
 		}
 	}
 
+		//Expected values
+    int expected[3][3] = {
+        {5, 8, 11},
+        {8, 14, 20},
+        {11, 20, 29}
+    };
+
 	// Call the function to be tested
 	int **result = SquareMat(MatInput, MatOutput, Size);
 
-
-	int expected[0][0]=5; // Expected output value based on the calculation
-	int expected[0][1]=8;
-	int expected[0][2]=11;
-	int expected[1][0]=8;
-	int expected[1][1]=14;
-	int expected[1][2]=20;
-	int expected[2][0]=11;
-	int expected[2][1]=20;
-	int expected[2][2]=29;
 	// Perform assertions to check the result against the expected output
 	for (int i = 0; i < Size; i++) {
 		for (int j = 0; j < Size; j++) {
