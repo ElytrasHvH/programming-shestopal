@@ -8,12 +8,12 @@ int **SquareMat(int **MatInput, int **MatOutput, int Size);
 START_TEST(test_SquareMat)
 {
 	int Size = 3;
-	int **MatInput = (int **)malloc(sizeof(int *) * Size);
-	int **MatOutput = (int **)malloc(sizeof(int *) * Size);
+	int **MatInput = (int **)malloc(sizeof(int *) * (unsigned int)Size);
+	int **MatOutput = (int **)malloc(sizeof(int *) * (unsigned int)Size);
 
 	for (int i = 0; i < Size; i++) {
-		MatInput[i] = (int *)malloc(sizeof(int) * Size);
-		MatOutput[i] = (int *)malloc(sizeof(int) * Size);
+		MatInput[i] = (int *)malloc(sizeof(int) * (unsigned int)Size);
+		MatOutput[i] = (int *)malloc(sizeof(int) * (unsigned int)Size);
 		for (int j = 0; j < Size; j++) {
 			MatInput[i][j] = i + j; /*
 									 * Example input values

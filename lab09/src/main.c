@@ -1,44 +1,45 @@
 /*!
   \mainpage
-  # Лабораторна робота №8
+  # Р›Р°Р±РѕСЂР°С‚РѕСЂРЅР° СЂРѕР±РѕС‚Р° в„–8
 
-  \author Шестопал Дмитро:КН-922Б
+  \author РЁРµСЃС‚РѕРїР°Р» Р”РјРёС‚СЂРѕ:РљРќ-922Р‘
   \date 07-12-22
  */
 /*!
 \file main.c
-\brief Головний файл\n
-Це файл, який містить точку входу,
-виклики функцій gcd,**sqmat1 та деякі значення для аргументів цих функцій.
+\brief Р“РѕР»РѕРІРЅРёР№ С„Р°Р№Р»\n
+Р¦Рµ С„Р°Р№Р», СЏРєРёР№ РјС–СЃС‚РёС‚СЊ С‚РѕС‡РєСѓ РІС…РѕРґСѓ,
+РІРёРєР»РёРєРё С„СѓРЅРєС†С–Р№ gcd,**sqmat1 С‚Р° РґРµСЏРєС– Р·РЅР°С‡РµРЅРЅСЏ РґР»СЏ Р°СЂРіСѓРјРµРЅС‚С–РІ С†РёС… С„СѓРЅРєС†С–Р№.
 
 */
 
 /*!
-Основна функція
-\brief Є точкою входу там має визови функцій **sqmat1 та gcd
+РћСЃРЅРѕРІРЅР° С„СѓРЅРєС†С–СЏ
+\brief Р„ С‚РѕС‡РєРѕСЋ РІС…РѕРґСѓ С‚Р°Рј РјР°С” РІРёР·РѕРІРё С„СѓРЅРєС†С–Р№ **sqmat1 С‚Р° gcd
 
-\param x Перше число для якого розраховувати НСД може бути задано користувачем або зегенроване само
-\param y Друге число для якого розраховувати НСД може бути задано користувачем або зегенроване само
-\param Size Розмір матриці
-\param GCDres Отримає НСД між x та y від GCDres
-\param **sqmat Вказівник на який виклакається функція множення матриць
+\param x РџРµСЂС€Рµ С‡РёСЃР»Рѕ РґР»СЏ СЏРєРѕРіРѕ СЂРѕР·СЂР°С…РѕРІСѓРІР°С‚Рё РќРЎР” РјРѕР¶Рµ Р±СѓС‚Рё Р·Р°РґР°РЅРѕ РєРѕСЂРёСЃС‚СѓРІР°С‡РµРј Р°Р±Рѕ Р·РµРіРµРЅСЂРѕРІР°РЅРµ СЃР°РјРѕ
+\param y Р”СЂСѓРіРµ С‡РёСЃР»Рѕ РґР»СЏ СЏРєРѕРіРѕ СЂРѕР·СЂР°С…РѕРІСѓРІР°С‚Рё РќРЎР” РјРѕР¶Рµ Р±СѓС‚Рё Р·Р°РґР°РЅРѕ РєРѕСЂРёСЃС‚СѓРІР°С‡РµРј Р°Р±Рѕ Р·РµРіРµРЅСЂРѕРІР°РЅРµ СЃР°РјРѕ
+\param Size Р РѕР·РјС–СЂ РјР°С‚СЂРёС†С–
+\param GCDres РћС‚СЂРёРјР°С” РќРЎР” РјС–Р¶ x С‚Р° y РІС–Рґ GCDres
+\param **sqmat Р’РєР°Р·С–РІРЅРёРє РЅР° СЏРєРёР№ РІРёРєР»Р°РєР°С”С‚СЊСЃСЏ С„СѓРЅРєС†С–СЏ РјРЅРѕР¶РµРЅРЅСЏ РјР°С‚СЂРёС†СЊ
 
 
 */
 
 /**
- * @brief Основна функція програми.
- * @return Код виходу з програми.
+ * @brief РћСЃРЅРѕРІРЅР° С„СѓРЅРєС†С–СЏ РїСЂРѕРіСЂР°РјРё.
+ * @return РљРѕРґ РІРёС…РѕРґСѓ Р· РїСЂРѕРіСЂР°РјРё.
  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include "lib.h"
+#include "lib.c"
 
 int main(int argc, char **argv)
 {
 	int **MatInput, **MatOutput, Size = 0, x, y, GCDres;
-	srand(time(0));
+	srand((unsigned)time(0));
 	//Generate first, check later
 	x = rand() % 6;
 	y = ((rand() % (1 + 10 * x)) + rand() % (1 + 2 * x)) * ((rand() % (1 + 2 * x * x + 1)) % 30) % (1 + x * x + 1); //for fun
@@ -64,11 +65,11 @@ int main(int argc, char **argv)
 	}
 
 	// Allocate memory for MatInput and MatOutput matrices
-	MatInput = (int **)malloc(sizeof(int *) * Size);
-	MatOutput = (int **)malloc(sizeof(int *) * Size);
+	MatInput = (int **)malloc(sizeof(int *) * (unsigned int)Size);
+	MatOutput = (int **)malloc(sizeof(int *) * (unsigned int)Size);
 	for (int i = 0; i < Size; i++) {
-		MatInput[i] = (int *)malloc(sizeof(int) * Size);
-		MatOutput[i] = (int *)malloc(sizeof(int) * Size);
+		MatInput[i] = (int *)malloc(sizeof(int) * (unsigned int)Size);
+		MatOutput[i] = (int *)malloc(sizeof(int) * (unsigned int)Size);
 	}
 
 	// Initialize MatInput matrix with random values and MatOutput matrix with 0
@@ -87,7 +88,7 @@ int main(int argc, char **argv)
 	GCDres = gcd(x, y);
 
 	//Print the GCD
-	printf("НСД у %d та %d - %d\n", x, y, GCDres);
+	printf("РќРЎР” Сѓ %d С‚Р° %d - %d\n", x, y, GCDres);
 	// Print the resulting MatOutput matrix
 	printf("Output Matrix:\n");
 	for (int i = 0; i < Size; i++) {
