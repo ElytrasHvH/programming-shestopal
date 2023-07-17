@@ -14,7 +14,7 @@
  * @param size      Розмір квадратних матриць.
  * @return          Вказівник на отриману квадратну матрицю (`MatOut`).
  */
-int **SquareMat(int **MatIn, int **MatOut, int size);
+int **SquareMat(int **mat_in, int **mat_out, int size);
 
 /**
  * @brief Обчислює найбільший спільний дільник (НСД) двох чисел.
@@ -23,6 +23,6 @@ int **SquareMat(int **MatIn, int **MatOut, int size);
  * @param y     Друге число.
  * @return      НСД чисел `x` та `y`.
  */
-int gcd(int x, int y);
+int gcd(int num1, int num2);
 
 #endif /* LIB_H */

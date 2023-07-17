@@ -4,49 +4,49 @@
  */
 #include "lib.h"
 
-int **SquareMat(int **MatIn, int **MatOut, int size)
+int **SquareMat(int **mat_in, int **mat_out, int size)
 {
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < size; j++) {
-			for (int s = 0; s < size; s++) {
+			for (int k = 0; k < size; k++) {
 				// Perform multiplication and accumulate the result
-				MatOut[i][j] += MatIn[i][s] * MatIn[s][j];
+				mat_out[i][j] += mat_in[i][k] * mat_in[k][j];
 			}
 		}
 	}
 
-	return MatOut;
+	return mat_out;
 }
 
-int gcd(int x, int y)
+int gcd(int num1, int num2)
 {
-	int x1 = x;
-	int y1 = y;
+	int frstnum = num1;
+	int scndnum = num2;
 
 	// Handling negative numbers
-	if (x1 < 0) {
-		x1 = -x1; // GCD for negative numbers is the same as for positive, so we invert it
+	if (frstnum < 0) {
+		frstnum = -frstnum; // GCD for negative numbers is the same as for positive, so we invert it
 	}
-	if (y1 < 0) {
-		y1 = -y1;
+	if (scndnum < 0) {
+		scndnum = -scndnum;
 	}
 
 	// Base cases
-	if (y1 == 0 || y1 == 1 || x1 == y1) {
-		return x1;
+	if (scndnum == 0 || scndnum == 1 || frstnum == scndnum) {
+		return frstnum;
 	}
-	if (x1 == 0 || x1 == 1) {
-		return y1;
+	if (frstnum == 0 || frstnum == 1) {
+		return scndnum;
 	}
 
 	// Computing GCD using the Euclidean algorithm
-	while (x1 != y1) {
-		if (x1 > y1) {
-			x1 -= y1;
+	while (frstnum != scndnum) {
+		if (frstnum > scndnum) {
+			frstnum -= scndnum;
 		} else {
-			y1 -= x1;
+			scndnum -= frstnum;
 		}
 	}
 
-	return x1;
+	return frstnum;
 }

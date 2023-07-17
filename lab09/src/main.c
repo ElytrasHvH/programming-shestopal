@@ -30,86 +30,92 @@
  * @brief Основна функція програми.
  * @return Код виходу з програми.
  */
+#include "lib.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "lib.h"
-#include "lib.c"
 
 int main(int argc, char **argv)
 {
-	int **MatInput, **MatOutput, Size = 0, x, y, GCDres;
-	srand((unsigned)time(0));
-	//Generate first, check later
-	x = rand() % 6;
-	y = ((rand() % (1 + 10 * x)) + rand() % (1 + 2 * x)) * ((rand() % (1 + 2 * x * x + 1)) % 30) % (1 + x * x + 1); //for fun
+	int **mat_input;
+	int **mat_output;
+	int size = 0;
+	int numfrst;
+	int numscnd;
+	int gcd_res;
 
-	//Check if user has given us a numbers to play with. overwrite if yes.
+	// Generate random numbers using random()
+	numfrst = random() % 6;
+	numscnd = ((random() % (1 + 10 * numfrst)) + random() % (1 + 2 * numfrst)) * ((random() % (1 + 2 * numfrst * numfrst + 1)) % 30) %
+		  (1 + numfrst * numfrst + 1); // for fun
+
+	// Check if user has given us numbers to play with. Overwrite if yes.
 	if (argc >= 4) {
-		x = atoi(argv[1]);
-		y = atoi(argv[2]);
-		Size = atoi(argv[3]);
-
+		numfrst = (int)strtol(argv[1], NULL, 10);
+		numscnd = (int)strtol(argv[2], NULL, 10);
+		size = (int)strtol(argv[3], NULL, 10);
 	} else if (argc == 3) {
-		x = atoi(argv[1]);
-		y = atoi(argv[2]);
-	} else if (argc == 2)
-		x = atoi(argv[1]);
+		numfrst = (int)strtol(argv[1], NULL, 10);
+		numscnd = (int)strtol(argv[2], NULL, 10);
+	} else if (argc == 2) {
+		numfrst = (int)strtol(argv[1], NULL, 10);
+	}
 
-	// Get matrix dimension from user (dont ask why didnt i generate it like x and y)
+	// Get matrix dimension from user
 	printf("Matrix dimension:\n");
-	while (Size < 1) {
-		scanf("%d", &Size);
-		if (Size < 1)
-			printf("Please give a correct size");
+	char buffer[100];
+	(void)fgets(buffer, sizeof(buffer), stdin);
+	size = (int)strtol(buffer, NULL, 10);
+	while (size < 1) {
+		printf("Please enter a correct size\n");
+		(void)fgets(buffer, sizeof(buffer), stdin);
+		size = (int)strtol(buffer, NULL, 10);
 	}
 
 	// Allocate memory for MatInput and MatOutput matrices
-	MatInput = (int **)malloc(sizeof(int *) * (unsigned int)Size);
-	MatOutput = (int **)malloc(sizeof(int *) * (unsigned int)Size);
-	for (int i = 0; i < Size; i++) {
-		MatInput[i] = (int *)malloc(sizeof(int) * (unsigned int)Size);
-		MatOutput[i] = (int *)malloc(sizeof(int) * (unsigned int)Size);
+	mat_input = (int **)malloc(sizeof(int *) * (unsigned int)size);
+	mat_output = (int **)malloc(sizeof(int *) * (unsigned int)size);
+	for (int i = 0; i < size; i++) {
+		mat_input[i] = (int *)malloc(sizeof(int) * (unsigned int)size);
+		mat_output[i] = (int *)malloc(sizeof(int) * (unsigned int)size);
 	}
 
-	// Initialize MatInput matrix with random values and MatOutput matrix with 0
-	for (int i = 0; i < Size; i++) {
-		for (int j = 0; j < Size; j++) {
-			MatInput[i][j] = rand() % 11;
-			printf("%d\t", MatInput[i][j]);
-			MatOutput[i][j] = 0;
+	// Initialize mat_input matrix with random values and mat_output matrix with 0
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
+			mat_input[i][j] = random() % 11;
+			printf("%d\t", mat_input[i][j]);
+			mat_output[i][j] = 0;
 		}
 		printf("\n");
 	}
 	printf("\n");
 
 	// Call the SquareMat function to perform matrix calculations
-	MatOutput = SquareMat(MatInput, MatOutput, Size);
-	GCDres = gcd(x, y);
+	mat_output = SquareMat(mat_input, mat_output, size);
+	gcd_res = gcd(numfrst, numscnd);
 
-	//Print the GCD
-	printf("НСД у %d та %d - %d\n", x, y, GCDres);
-	// Print the resulting MatOutput matrix
+	// Print the GCD
+	printf("НСД у %d та %d - %d\n", numfrst, numscnd, gcd_res);
+
+	// Print the resulting mat_output matrix
 	printf("Output Matrix:\n");
-	for (int i = 0; i < Size; i++) {
-		for (int j = 0; j < Size; j++) {
-			printf("%d\t", MatOutput[i][j]);
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
+			printf("%d\t", mat_output[i][j]);
 		}
 		printf("\n");
 	}
 
 	// Free dynamically allocated memory
-	for (int i = 0; i < Size; i++) {
-		free(MatInput[i]);
-		free(MatOutput[i]);
+	for (int i = 0; i < size; i++) {
+		free(mat_input[i]);
+		free(mat_output[i]);
 	}
-	free(MatInput);
-	free(MatOutput);
-	//printf("Memory has been freed successfully");
+	free(mat_input);
+	free(mat_output);
+
 	return 0;
 }
-
-
-
 
 //for anyone reading this. i tryied to kms 15 times trying to make unit test via libcheck for this.

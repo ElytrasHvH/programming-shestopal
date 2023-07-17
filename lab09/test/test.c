@@ -1,27 +1,26 @@
+#include "../src/lib.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <check.h>
-#include "lib.h"
-// Include the function declaration
-int **SquareMat(int **MatInput, int **MatOutput, int Size);
+
 
 START_TEST(test_SquareMat)
 {
-	int Size = 3;
-	int **MatInput = (int **)malloc(sizeof(int *) * (unsigned int)Size);
-	int **MatOutput = (int **)malloc(sizeof(int *) * (unsigned int)Size);
+	int size = 3;
+	int **mat_input = (int **)malloc(sizeof(int *) * (unsigned int)size);
+	int **mat_output = (int **)malloc(sizeof(int *) * (unsigned int)size);
 
-	for (int i = 0; i < Size; i++) {
-		MatInput[i] = (int *)malloc(sizeof(int) * (unsigned int)Size);
-		MatOutput[i] = (int *)malloc(sizeof(int) * (unsigned int)Size);
-		for (int j = 0; j < Size; j++) {
-			MatInput[i][j] = i + j; /*
+	for (int i = 0; i < size; i++) {
+		mat_input[i] = (int *)malloc(sizeof(int) * (unsigned int)size);
+		mat_output[i] = (int *)malloc(sizeof(int) * (unsigned int)size);
+		for (int j = 0; j < size; j++) {
+			mat_input[i][j] = i + j; /*
 									 * Example input values
 									 * 0 1 2
 									 * 1 2 3
 									 * 2 3 4
 			                         */
-			MatOutput[i][j] = 0; // Initialize output matrix to 0
+			mat_output[i][j] = 0; // Initialize output matrix to 0
 		}
 	}
 
@@ -33,22 +32,32 @@ START_TEST(test_SquareMat)
     };
 
 	// Call the function to be tested
-	int **result = SquareMat(MatInput, MatOutput, Size);
+	int **result = SquareMat(mat_input, mat_output, size);
 
 	// Perform assertions to check the result against the expected output
-	for (int i = 0; i < Size; i++) {
-		for (int j = 0; j < Size; j++) {
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
 			ck_assert_int_eq(result[i][j], expected[i][j]);
 		}
 	}
 
 	// Clean up dynamically allocated memory
-	for (int i = 0; i < Size; i++) {
-		free(MatInput[i]);
-		free(MatOutput[i]);
+	for (int i = 0; i < size; i++) {
+		free(mat_input[i]);
+		free(mat_output[i]);
 	}
-	free(MatInput);
-	free(MatOutput);
+	free(mat_input);
+	free(mat_output);
+}
+END_TEST
+
+START_TEST(test_gcd)
+{
+    int num1 = 10;
+    int num2 = 15;
+    int expected_result = 5;
+    int result = gcd(num1, num2);
+    ck_assert_int_eq(result, expected_result);
 }
 END_TEST
 
@@ -61,12 +70,31 @@ Suite *squareMat_suite(void)
 	return suite;
 }
 
+Suite *gcd_suite(void)
+{
+    Suite *s;
+    TCase *tc_core;
+
+    s = suite_create("GCD");
+    tc_core = tcase_create("Core");
+
+    tcase_add_test(tc_core, test_gcd);
+    suite_add_tcase(s, tc_core);
+
+    return s;
+}
+
 int main(void)
 {
-	Suite *suite = squareMat_suite();
-	SRunner *runner = srunner_create(suite);
-	srunner_run_all(runner, CK_NORMAL);
-	int num_failures = srunner_ntests_failed(runner);
-	srunner_free(runner);
-	return (num_failures == 0) ? 0 : 1;
-}
+    Suite *squareMatSuite = squareMat_suite();
+    Suite *gcdSuite = gcd_suite();
+
+    SRunner *runner = srunner_create(squareMatSuite);
+    srunner_add_suite(runner, gcdSuite);
+
+    srunner_run_all(runner, CK_NORMAL);
+    int num_failures = srunner_ntests_failed(runner);
+    srunner_free(runner);
+
+    return (num_failures == 0) ? 0 : 1;
+}
