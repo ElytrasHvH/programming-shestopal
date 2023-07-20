@@ -1,186 +1,170 @@
+
 /*!
   \mainpage
   # Лабораторна робота №8
 
   \author Шестопал Дмитро:КН-922Б
   \date 07-12-22
- */
+**/
 /*!
 \file main.c
 \brief Головний файл\n
 Це файл, який містить точку входу,
 виклики функцій gcd,**sqmat1 та деякі значення для аргументів цих функцій.
 
-*/
-
-/*!
-Основна функція
-\brief Є точкою входу там має визови функцій **sqmat1 та gcd
-
-\param x Перше число для якого розраховувати НСД може бути задано користувачем або зегенроване само
-\param y Друге число для якого розраховувати НСД може бути задано користувачем або зегенроване само
-\param Size Розмір матриці
-\param GCDres Отримає НСД між x та y від GCDres
-\param **sqmat Вказівник на який виклакається функція множення матриць
-
-
-*/
-
-/**
- * @brief Основна функція програми.
- * @return Код виходу з програми.
- */
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-/**
- * @file lib.h
- * @brief Заголовочний файл з прототипами функцій для обчислення квадратної матриці та функції НСД.
- */
-
+**/
 
 /**
  * @brief Виконує обчислення квадратної матриці.
  *
- * @param MatIn     Вказівник на вхідну квадратну матрицю.
- * @param MatOut    Вказівник на вихідну квадратну матрицю.
+ * @param mat_in     Вказівник на вхідну квадратну матрицю.
+ * @param mat_out    Вказівник на вихідну квадратну матрицю.
  * @param size      Розмір квадратних матриць.
- * @return          Вказівник на отриману квадратну матрицю (`MatOut`).
- */
-int **SquareMat(int **MatIn, int **MatOut, int size);
+ * @return          Вказівник на отриману квадратну матрицю (`mat_out`).
+ **/
+int **square_mat(int **mat_in, int **mat_out, int size);
 
 /**
  * @brief Обчислює найбільший спільний дільник (НСД) двох чисел.
  *
- * @param x     Перше число.
- * @param y     Друге число.
- * @return      НСД чисел `x` та `y`.
- */
-int gcd(int x, int y);
-
-
-
+ * @param num1     Перше число.
+ * @param num2     Друге число.
+ * @return      НСД чисел `num1` та `num2`.
+ **/
+int gcd(int num1, int num2);
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 int main(int argc, char **argv)
 {
-	int **MatInput, **MatOutput, Size = 0, x, y, GCDres;
-	srand(time(0));
-	//Generate first, check later
-	x = rand() % 6;
-	y = ((rand() % (1 + 10 * x)) + rand() % (1 + 2 * x)) * ((rand() % (1 + 2 * x * x + 1)) % 30) % (1 + x * x + 1); //for fun
+	int **mat_input;
+	int **mat_output;
+	int size = 0;
+	int num1;
+	int num2;
+	int gcd_res;
+	char buffer[100];
+	char *endptr;
 
-	//Check if user has given us a numbers to play with. overwrite if yes.
+	srand((unsigned)time(0));
+	// Generate random numbers using random()
+	num1 = random() % 6;
+	num2 = ((random() % (1 + 10 * num1)) + random() % (1 + 2 * num1)) * ((random() % (1 + 2 * num1 * num1 + 1)) % 30) %
+	       (1 + num1 * num1 + 1); // for fun
+
+	// Check if user has given us numbers to play with. Overwrite if yes.
 	if (argc >= 4) {
-		x = atoi(argv[1]);
-		y = atoi(argv[2]);
-		Size = atoi(argv[3]);
-
+		num1 = (int)strtol(argv[1], NULL, 10);
+		num2 = (int)strtol(argv[2], NULL, 10);
+		size = (int)strtol(argv[3], NULL, 10);
 	} else if (argc == 3) {
-		x = atoi(argv[1]);
-		y = atoi(argv[2]);
-	} else if (argc == 2)
-		x = atoi(argv[1]);
+		num1 = (int)strtol(argv[1], NULL, 10);
+		num2 = (int)strtol(argv[2], NULL, 10);
+	} else if (argc == 2) {
+		num1 = (int)strtol(argv[1], NULL, 10);
+	}
 
 	// Get matrix dimension from user (dont ask why didnt i generate it like x and y)
 	printf("Matrix dimension:\n");
-	while (Size < 1) {
-		scanf("%d", &Size);
-		if (Size < 1)
-			printf("Please give a correct size");
+	while (size < 1) {
+		(void)fgets(buffer, sizeof(buffer), stdin);
+		size = (int)strtol(buffer, &endptr, 10);
+		if (*endptr != '\n' && *endptr != '\0') {
+			printf("Invalid input. Please enter an integer.\n");
+			size = 0;
+		} else if (size < 1) {
+			printf("Please give a correct size\n");
+		}
 	}
 
-	// Allocate memory for MatInput and MatOutput matrices
-	MatInput = (int **)malloc(sizeof(int *) * Size);
-	MatOutput = (int **)malloc(sizeof(int *) * Size);
-	for (int i = 0; i < Size; i++) {
-		MatInput[i] = (int *)malloc(sizeof(int) * Size);
-		MatOutput[i] = (int *)malloc(sizeof(int) * Size);
+	// Allocate memory for mat_input and mat_output matrices
+	mat_input = (int **)malloc(sizeof(int *) * (unsigned)size);
+	mat_output = (int **)malloc(sizeof(int *) * (unsigned)size);
+	for (int i = 0; i < size; i++) {
+		mat_input[i] = (int *)malloc(sizeof(int) * (unsigned)size);
+		mat_output[i] = (int *)malloc(sizeof(int) * (unsigned)size);
 	}
 
-	// Initialize MatInput matrix with random values and MatOutput matrix with 0
-	for (int i = 0; i < Size; i++) {
-		for (int j = 0; j < Size; j++) {
-			MatInput[i][j] = rand() % 11;
-			printf("%d\t", MatInput[i][j]);
-			MatOutput[i][j] = 0;
+	// Initialize mat_input matrix with random values and mat_output matrix with 0
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
+			mat_input[i][j] = random() % 11;
+			printf("%d\t", mat_input[i][j]);
+			mat_output[i][j] = 0;
 		}
 		printf("\n");
 	}
 	printf("\n");
 
-	// Call the SquareMat function to perform matrix calculations
-	MatOutput = SquareMat(MatInput, MatOutput, Size);
-	GCDres = gcd(x, y);
+	// Call the square_mat function to perform matrix calculations
+	mat_output = square_mat(mat_input, mat_output, size);
+	gcd_res = gcd(num1, num2);
 
 	//Print the GCD
-	printf("НСД у %d та %d - %d\n", x, y, GCDres);
-	// Print the resulting MatOutput matrix
+	printf("НСД у %d та %d - %d\n", num1, num2, gcd_res);
+	// Print the resulting mat_output matrix
 	printf("Output Matrix:\n");
-	for (int i = 0; i < Size; i++) {
-		for (int j = 0; j < Size; j++) {
-			printf("%d\t", MatOutput[i][j]);
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
+			printf("%d\t", mat_output[i][j]);
 		}
 		printf("\n");
 	}
 
 	// Free dynamically allocated memory
-	for (int i = 0; i < Size; i++) {
-		free(MatInput[i]);
-		free(MatOutput[i]);
+	for (int i = 0; i < size; i++) {
+		free(mat_input[i]);
+		free(mat_output[i]);
 	}
-	free(MatInput);
-	free(MatOutput);
+	free(mat_input);
+	free(mat_output);
 	//printf("Memory has been freed successfully");
 	return 0;
 }
 
-
-#include "lib.h"
-
-int **SquareMat(int **MatIn, int **MatOut, int size)
+int **square_mat(int **mat_in, int **mat_out, int size)
 {
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < size; j++) {
-			for (int s = 0; s < size; s++) {
+			for (int k = 0; k < size; k++) {
 				// Perform multiplication and accumulate the result
-				MatOut[i][j] += MatIn[i][s] * MatIn[s][j];
+				mat_out[i][j] += mat_in[i][k] * mat_in[k][j];
 			}
 		}
 	}
 
-	return MatOut;
+	return mat_out;
 }
 
-int gcd(int x, int y)
+int gcd(int num1, int num2)
 {
-	int x1 = x;
-	int y1 = y;
+	int num1_copy = num1;
+	int num2_copy = num2;
 
 	// Handling negative numbers
-	if (x1 < 0) {
-		x1 = -x1; // GCD for negative numbers is the same as for positive, so we invert it
+	if (num1_copy < 0) {
+		num1_copy = -num1_copy; // GCD for negative numbers is the same as for positive, so we invert it
 	}
-	if (y1 < 0) {
-		y1 = -y1;
+	if (num2_copy < 0) {
+		num2_copy = -num2_copy;
 	}
 
 	// Base cases
-	if (y1 == 0 || y1 == 1 || x1 == y1) {
-		return x1;
+	if (num2_copy == 0 || num2_copy == 1 || num1_copy == num2_copy) {
+		return num1_copy;
 	}
-	if (x1 == 0 || x1 == 1) {
-		return y1;
+	if (num1_copy == 0 || num1_copy == 1) {
+		return num2_copy;
 	}
 
 	// Computing GCD using the Euclidean algorithm
-	while (x1 != y1) {
-		if (x1 > y1) {
-			x1 -= y1;
+	while (num1_copy != num2_copy) {
+		if (num1_copy > num2_copy) {
+			num1_copy -= num2_copy;
 		} else {
-			y1 -= x1;
+			num2_copy -= num1_copy;
 		}
 	}
 
-	return x1;
+	return num1_copy;
 }
-
-

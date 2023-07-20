@@ -1,5 +1,5 @@
 CC = clang
-LAB_OPTS = -I./src #src/lib.c
+LAB_OPTS = 
 C_OPTS = -std=gnu11 -g -Wall -Wextra -Werror -Wformat-security -Wfloat-equal -Wshadow -Wconversion -Wlogical-not-parentheses -Wnull-dereference -Wno-unused-variable -Werror=vla $(LAB_OPTS) $(MAC_OPTS)
 
 clean:
@@ -13,6 +13,7 @@ main.bin: src/main.c
 run: clean prep compile
 	./dist/main.bin
 check:
+	clang-format -i src/*
 	clang-format --verbose -dry-run --Werror src/*
 	clang-tidy src/*.c  -checks=-readability-uppercase-literal-suffix,-readability-magic-numbers,-clang-analyzer-deadcode.DeadStores,-clang-analyzer-security.insecureAPI.rand
 	rm -rf src/*.dump
