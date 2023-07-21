@@ -2,7 +2,7 @@
  * @file lib.h
  * @brief Заголовочний файл з прототипами функцій для створення, обчислення та деструкції квадратної матриці та функції НСД.
  */
-
+#include <stdbool.h>
 #ifndef LIB_H
 #define LIB_H
 
@@ -11,21 +11,21 @@
  *
  * Функція створює квадратну матрицю заданого розміру та заповнює її елементи.
  *
- * @param size      Розмір матриці.
- * @param randomize Прапорець, який вказує, чи потрібно генерувати випадкові значення (1 - так, 0 - ні).
- * @param limit     Максимальне значення випадкового числа.
- * @param shift     Зсув для випадкового числа.
- * @return          Вказівник на створену матрицю.
+ * @param size Розмір матриці.
+ * @param randomize Флаг рандомізації
+ * @param limit Ліміт генерації (0 - limit-1)
+ * @param shift Зміщення згенерованих чисел (shift - shift+limit-1)
+ * @return Вказівник на створену матрицю.
  */
-int **create_mat(int size, int randomize, int limit, int shift);
+int **create_mat(int size, bool randomize, int limit, int shift);
 
 /**
  * @brief Звільняє пам'ять, виділену для квадратної матриці.
  *
  * Функція звільняє пам'ять, виділену для квадратної матриці.
  *
- * @param matrix    Вказівник на матрицю.
- * @param size      Розмір матриці.
+ * @param matrix Матриця
+ * @param size Розмір матриці.
  */
 void destroy_mat(int **matrix, int size);
 
@@ -87,4 +87,13 @@ int *diagonal(int **mat_in,int *arr,int size);
  * @param size розмір массиву
 */
 void bubble_sort(int *arr, int size);
+/**
+*@brief генерування значень з заданим лімітом там зміщенням
+*
+*@param limit лимит значення (може бути від'ємним та нулем)
+*@param shift зміщення (може бути від'ємним та нулем)
+*
+*@return згенерованне значення
+*/
+int generate_random_value(int limit, int shift);
 #endif /* LIB_H */

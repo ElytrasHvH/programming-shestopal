@@ -1,24 +1,59 @@
-
+#include "lib.h"
+#include <limits.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
-#include "lib.h"
 
-int **create_mat(int size, int randomize, int limit, int shift)
+int **create_mat(int size, bool randomize, int limit, int shift)
 {
-	srand((unsigned int)time(NULL));
-	int **matrix = (int **)malloc(sizeof(int *) * (unsigned)size);
-	for (int i = 0; i < size; i++) {
-		matrix[i] = (int *)malloc(sizeof(int) * (unsigned)size);
-		for (int j = 0; j < size; j++) {
-			if (randomize) {
-				int random_value = (int)rand() % limit + shift; // Random value generation with limit and shift
-				matrix[i][j] = random_value;
-			} else {
-				matrix[i][j] = 0; // Initialization of a matrix with zeros
-			}
-		}
-	}
-	return matrix;
+    if(size<2) {
+    size = 2;
+    }
+    int **matrix = (int **)malloc(sizeof(int *) * (unsigned)size);
+    for (int i = 0; i < size; i++) {
+        matrix[i] = (int *)malloc(sizeof(int) * (unsigned)size);
+        for (int j = 0; j < size; j++) {
+            if (randomize) {
+                matrix[i][j] = generate_random_value(limit, shift);
+            } else {
+                matrix[i][j] = 0; // Initialization of a matrix with zeros
+            }
+        }
+    }
+    return matrix;
+}
+int generate_random_value(int limit, int shift) {
+    int rand_val;
+    int random_value;
+    if (limit > 0) {
+        rand_val = (int)random() % limit;
+        if (shift > 0 && rand_val > INT_MAX - shift) {
+            random_value = INT_MAX; // Prevent integer overflow
+        } else if (shift < 0 && rand_val < INT_MIN - shift) {
+            random_value = INT_MIN; // Prevent integer underflow
+        } else {
+            random_value = rand_val + shift; // Random value generation with limit and shift
+        }
+    } else if (limit < 0) {
+        rand_val = -((int)random() % -limit);
+        if (shift > 0 && rand_val > INT_MAX - shift) {
+            random_value = INT_MAX; // Prevent integer overflow
+        } else if (shift < 0 && rand_val < INT_MIN - shift) {
+            random_value = INT_MIN; // Prevent integer underflow
+        } else {
+            random_value = rand_val + shift; // Invert limit and make values negative
+        }
+    } else {
+        rand_val = (int)random();
+        if (shift > 0 && rand_val > INT_MAX - shift) {
+            random_value = INT_MAX; // Prevent integer overflow
+        } else if (shift < 0 && rand_val < INT_MIN - shift) {
+            random_value = INT_MIN; // Prevent integer underflow
+        } else {
+            random_value = rand_val + shift; // Only shifts values if limit is not given
+        }
+    }
+    return random_value;
 }
 
 int *create_arr(int size)

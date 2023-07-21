@@ -1,12 +1,15 @@
 #include "../src/lib.h"
+#include <limits.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <check.h>
 #include <math.h>
+#include <time.h>
 
 START_TEST(test_mat_create_random)
 {
     int size = 3;
-    int randomize = 1;
+    bool randomize = true;
     int limit = 10;
     int shift = 0;
 
@@ -32,7 +35,7 @@ END_TEST
 START_TEST(test_mat_create_not_random)
 {
     int size = 3;
-    int randomize = 0;
+    bool randomize=false;
     int limit = 10;
     int shift = 0;
 
@@ -57,8 +60,8 @@ END_TEST
 START_TEST(test_square_mat)
 {
     int size = 3;
-    int **mat_in = create_mat(size, 0, 0, 0);
-    int **mat_out = create_mat(size, 0, 0, 0);
+    int **mat_in = create_mat(size, false, 0, 0);
+    int **mat_out = create_mat(size, false, 0, 0);
 
     // Fill mat_in with i+k values
     for (int i = 0; i < size; i++) {
@@ -109,7 +112,7 @@ END_TEST
 START_TEST(test_diagonal)
 {
     int size = 3;
-    int **mat_in = create_mat(size, 0, 0, 0);
+    int **mat_in = create_mat(size, false, 0, 0);
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
             mat_in[i][j] = i * size + j;
@@ -138,6 +141,49 @@ START_TEST(test_bubble_sort)
 }
 END_TEST
 
+//Test RNG with positive limit value
+START_TEST(test_generate_random_value_positive_limit)
+{
+    int limit = 10;
+    int shift = 5;
+    srand((unsigned int)time(NULL));
+    for (int i = 0; i < 100; i++) {
+        int value = generate_random_value(limit, shift);
+        ck_assert_int_ge(value, shift);
+        ck_assert_int_lt(value, limit + shift);
+    }
+}
+END_TEST
+
+//Test RNG with negative limit value
+START_TEST(test_generate_random_value_negative_limit)
+{
+    int limit = -10;
+    int shift = 5;
+    srand((unsigned int)time(NULL));
+    for (int i = 0; i < 100; i++) {
+        int value = generate_random_value(limit, shift);
+        ck_assert_int_ge(value, -abs(limit) + shift);
+        ck_assert_int_le(value, shift);
+    }
+}
+END_TEST
+
+//Test RNG with 0 limit value
+START_TEST(test_generate_random_value_zero_limit)
+{
+    int limit = 0;
+    int shift = 5;
+    srand((unsigned int)time(NULL));
+    for (int i = 0; i < 100; i++) {
+        int value = generate_random_value(limit, shift);
+        ck_assert_int_ge(value, shift);
+        ck_assert_int_le(value, INT_MAX);
+    }
+}
+END_TEST
+
+
 Suite *lib_suite(void)
 {
     Suite *s;
@@ -153,6 +199,9 @@ Suite *lib_suite(void)
     tcase_add_test(tc_core, test_create_arr);
     tcase_add_test(tc_core, test_diagonal);
     tcase_add_test(tc_core, test_bubble_sort);
+    tcase_add_test(tc_core, test_generate_random_value_positive_limit);
+    tcase_add_test(tc_core, test_generate_random_value_negative_limit);
+    tcase_add_test(tc_core, test_generate_random_value_zero_limit);
     
     suite_add_tcase(s, tc_core);
 
