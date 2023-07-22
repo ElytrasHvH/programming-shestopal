@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 int **create_int_mat(int size, bool randomize, int limit, int shift)
 {
@@ -332,6 +333,7 @@ void get_adj_matrix(double **mat, double **adj, int size) {
             sign = ((i + j) % 2 == 0) ? 1 : -1;
             // Calculate the determinant of the cofactor and store it in the adjugate matrix
             adj[j][i] = sign * get_determinant(temp, size - 1);
+            
         }
     }
     // Free memory

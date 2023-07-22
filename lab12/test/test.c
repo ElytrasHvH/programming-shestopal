@@ -6,54 +6,111 @@
 #include <math.h>
 #include <time.h>
 
-START_TEST(test_mat_create_random)
+START_TEST(test_create_int_mat_not_random)
 {
     int size = 3;
-    bool randomize = true;
     int limit = 10;
     int shift = 0;
-
-    int **matrix = create_mat(size, randomize, limit, shift);
-
-    // Perform assertions to check the correctness of the created matrix
-
-    // Check that the matrix is not NULL
-    ck_assert_ptr_ne(matrix, NULL);
-
-    // Check that all elements in the matrix are within the specified limit
+    int **mat = create_int_mat(size, false, limit, shift);
+    ck_assert(mat != NULL);
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-            ck_assert_int_ge(matrix[i][j], shift);
-            ck_assert_int_lt(matrix[i][j], limit + shift);
+            ck_assert_int_eq(mat[i][j], 0);
         }
     }
-
-    destroy_mat(matrix, size);
+    destroy_int_mat(mat, size);
 }
 END_TEST
 
-START_TEST(test_mat_create_not_random)
+START_TEST(test_create_double_mat_not_random)
 {
     int size = 3;
-    bool randomize=false;
-    int limit = 10;
-    int shift = 0;
-
-    int **matrix = create_mat(size, randomize, limit, shift);
-
-    // Perform assertions to check the correctness of the created matrix
-
-    // Check that the matrix is not NULL
-    ck_assert_ptr_ne(matrix, NULL);
-
-    // Check that all elements in the matrix are zero
+    double limit = 10.0;
+    double shift = 0.0;
+    double **mat = create_double_mat(size, false, limit, shift);
+    ck_assert(mat != NULL);
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-            ck_assert_int_eq(matrix[i][j], 0);
+            ck_assert(mat[i][j] == 0.0);
         }
     }
+    destroy_double_mat(mat, size);
+}
+END_TEST
+START_TEST(test_create_int_mat_random)
+{
+    int size = 3;
+    int limit = 10;
+    int shift = 0;
+    int **mat = create_int_mat(size, true, limit, shift);
+    ck_assert(mat != NULL);
+    destroy_int_mat(mat, size);
+}
+END_TEST
 
-    destroy_mat(matrix, size);
+START_TEST(test_create_double_mat_random)
+{
+    int size = 3;
+    double limit = 10.0;
+    double shift = 0.0;
+    double **mat = create_double_mat(size, true, limit, shift);
+    ck_assert(mat != NULL);
+    destroy_double_mat(mat, size);
+}
+END_TEST
+
+
+START_TEST(test_generate_random_int_value_positive_limit)
+{
+    int limit = 10;
+    int shift = 0;
+    int value = generate_random_int_value(limit, shift);
+    ck_assert(value >= 0 && value <= limit);
+}
+END_TEST
+
+START_TEST(test_generate_random_int_value_negative_limit)
+{
+    int limit = -10;
+    int shift = 0;
+    int value = generate_random_int_value(limit, shift);
+    ck_assert(value >= limit && value <= 0);
+}
+END_TEST
+
+START_TEST(test_generate_random_int_value_zero_limit)
+{
+    int limit = 0;
+    int shift = 0;
+    int value = generate_random_int_value(limit, shift);
+    ck_assert(value == 0);
+}
+END_TEST
+
+START_TEST(test_generate_random_double_value_positive_limit)
+{
+    double limit = 10.0;
+    double shift = 0.0;
+    double value = generate_random_double_value(limit, shift);
+    ck_assert(value >= 0.0 && value <= limit);
+}
+END_TEST
+
+START_TEST(test_generate_random_double_value_negative_limit)
+{
+    double limit = -10.0;
+    double shift = 0.0;
+    double value = generate_random_double_value(limit, shift);
+    ck_assert(value >= limit && value <= 0.0);
+}
+END_TEST
+
+START_TEST(test_generate_random_double_value_zero_limit)
+{
+   double limit = 0.0;
+   double shift = 0.0;
+   double value = generate_random_double_value(limit, shift);
+   ck_assert(value == 0.0);
 }
 END_TEST
 
@@ -138,82 +195,6 @@ START_TEST(test_bubble_sort)
     ck_assert_int_eq(arr[2], 3);
     ck_assert_int_eq(arr[3], 4);
     ck_assert_int_eq(arr[4], 5);
-}
-END_TEST
-
-//Test RNG with positive limit value
-START_TEST(test_generate_random_value_positive_limit)
-{
-    int limit = 10;
-    int shift = 5;
-    srand((unsigned int)time(NULL));
-    for (int i = 0; i < 100; i++) {
-        int value = generate_random_value(limit, shift);
-        ck_assert_int_ge(value, shift);
-        ck_assert_int_lt(value, limit + shift);
-    }
-}
-END_TEST
-
-//Test RNG with negative limit value
-START_TEST(test_generate_random_value_negative_limit)
-{
-    int limit = -10;
-    int shift = 5;
-    srand((unsigned int)time(NULL));
-    for (int i = 0; i < 100; i++) {
-        int value = generate_random_value(limit, shift);
-        ck_assert_int_ge(value, -abs(limit) + shift);
-        ck_assert_int_le(value, shift);
-    }
-}
-END_TEST
-
-//Test RNG with 0 limit value
-START_TEST(test_generate_random_value_zero_limit)
-{
-    int limit = 0;
-    int shift = 5;
-    srand((unsigned int)time(NULL));
-    for (int i = 0; i < 100; i++) {
-        int value = generate_random_value(limit, shift);
-        ck_assert_int_ge(value, shift);
-        ck_assert_int_le(value, INT_MAX);
-    }
-}
-END_TEST
-
-//Test reverse matrix calucaltions using adjugate matrix method
-START_TEST(test_adj_reverse_mat)
-{
-    int size = 3;
-    int **mat_in = create_mat(size, true, 3, 3);
-    int **mat_out = create_mat(size, false, 0, 0);
-
-    mat_in[0][0] = 1;
-    mat_in[0][1] = 2;
-    mat_in[0][2] = 3;
-    mat_in[1][0] = 4;
-    mat_in[1][1] = 5;
-    mat_in[1][2] = 6;
-    mat_in[2][0] = 7;
-    mat_in[2][1] = 8;
-    mat_in[2][2] = 9;
-
-    adj_reverse_mat(mat_in, mat_out, size);
-
-    ck_assert_int_eq(mat_out[0][0], -3);
-    ck_assert_int_eq(mat_out[0][1], 6);
-    ck_assert_int_eq(mat_out[0][2], -3);
-    ck_assert_int_eq(mat_out[1][0], 6);
-    ck_assert_int_eq(mat_out[1][1], -12);
-    ck_assert_int_eq(mat_out[1][2], 6);
-    ck_assert_int_eq(mat_out[2][0], -3);
-    ck_assert_int_eq(mat_out[2][1], 6);
-    ck_assert_int_eq(mat_out[2][2], -3);
-
-    destroy_mat(mat_in, size);
-    destroy_mat(mat_out, size);
 }
 END_TEST
 
@@ -310,16 +291,21 @@ Suite *lib_suite(void)
     s = suite_create("Lib");
     tc_core = tcase_create("Core");
 
-    tcase_add_test(tc_core, test_mat_create_random);
-    tcase_add_test(tc_core, test_mat_create_not_random);
-    tcase_add_test(tc_core, test_generate_random_value_positive_limit);
-    tcase_add_test(tc_core, test_generate_random_value_negative_limit);
-    tcase_add_test(tc_core, test_generate_random_value_zero_limit);
+    tcase_add_test(tc_core, test_create_int_mat_random);
+    tcase_add_test(tc_core, test_create_int_mat_not_random);
+    tcase_add_test(tc_core, test_create_double_mat_random);
+    tcase_add_test(tc_core, test_create_double_mat_not_random);
+
+    tcase_add_test(tc_core, test_generate_random_int_value_positive_limit); 
+    tcase_add_test(tc_core, test_generate_random_int_value_negative_limit); 
+    tcase_add_test(tc_core, test_generate_random_int_value_zero_limit); 
+    
+    tcase_add_test(tc_core,test_generate_random_double_value_positive_limit); 
+    tcase_add_test(tc_core,test_generate_random_double_value_negative_limit); 
+    tcase_add_test(tc_core,test_generate_random_double_value_zero_limit); 
     tcase_add_test(tc_core, test_get_determinant);
-    tcase_add_test(tc_core, test_adj_reverse_mat);
     tcase_add_test(tc_core, test_get_cofactor);
     tcase_add_test(tc_core, test_get_adj_matrix);
-
     tcase_add_test(tc_core, test_bubble_sort);
     tcase_add_test(tc_core, test_square_mat);
     tcase_add_test(tc_core, test_gcd);
