@@ -21,11 +21,11 @@ int main(void){
     if(exist){
         print_double_mat(mat_in,size,size);
         print_double_mat(mat_out,size,size);
-        destroy_double_mat(mat_in,size);
-        destroy_double_mat(mat_out,size);
     }
     else{
         printf("Inverse matrix doesnt exist for this one");
     }
+    destroy_mat((void**)mat_in,size);
+    destroy_mat((void**)mat_out,size);    
     return 0;
 }

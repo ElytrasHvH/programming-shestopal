@@ -7,15 +7,26 @@
 #define LIB_H
 
 /**
- * @brief Створює массив
+ * @brief Створює массив цілих чисел
  * 
- * Функція  створює массив заданного розміру
+ * Функція створює массив заданного розміру та иніціалізує значення у 0
  * 
  * @param size розмір массива
  * 
  * @return вказівник на массив
 */
-int* create_arr(int size);
+int* create_int_arr(int size);
+
+/**
+ * @brief Створює массив дійсних чисел 
+ * 
+ * Функція створює массив заданного розміру та иніціалізує значення у 0
+ * 
+ * @param size розмір массива
+ * 
+ * @return вказівник на массив
+*/
+double *create_double_arr(int size);
 /**
  * @brief Знищує массив
  * 
@@ -23,7 +34,7 @@ int* create_arr(int size);
  * 
  * @param arr вказівник на массив
 */
-void destroy_arr(int* arr);
+void destroy_arr(void* arr);
 /**
  * @brief Створює квадратну матрицю цілих чисел.
  *
@@ -48,27 +59,17 @@ int **create_int_mat(int size, bool randomize, int limit, int shift);
  * @param shift Зміщення згенерованих чисел (shift - shift+limit-1)
  * @return Вказівник на створену матрицю.
  */
-double **create_double_mat(int size, bool randomize, int limit, int shift);
+double **create_double_mat(int size, bool randomize, double limit, double shift);
 
 /**
- * @brief Звільняє пам'ять, виділену для квадратної матриці цілих чисел.
+ * @brief Звільняє пам'ять, виділену для 2d массивів будь-якого типу
  *
- * Функція звільняє пам'ять, виділену для квадратної матриці цілих чисел.
+ * Функція звільняє пам'ять, виділену для 2d матриці будь-якого типу
  *
  * @param matrix Матриця
  * @param size Розмір матриці.
  */
-void destroy_int_mat(int **matrix, int size);
-
-/**
- * @brief Звільняє пам'ять, виділену для квадратної матриці цілих чисел.
- *
- * Функція звільняє пам'ять, виділену для квадратної матриці цілих чисел.
- *
- * @param matrix Матриця
- * @param size Розмір матриці.
- */
-void destroy_double_mat(double **matrix, int size);
+void destroy_mat(void **matrix, int size);
 
 /**
 * @brief Генерує дійсне число у заданному діапазоні
@@ -208,5 +209,14 @@ void get_cofactor(double **mat, double **temp, int p, int q, int size);
  * @param size Розмір матриці.
  */
 void get_adj_matrix(double **mat, double **adj, int size);
+
+/**
+ * @brief Міняє місця строк массиву
+ *
+ * @param Массив у якому треба змінити місяцми
+ * @param Перша строка
+ * @param Друга строка
+ */
+void swap_rows(void **mat, int row1, int row2);
 
 #endif /* LIB_H */

@@ -1,11 +1,11 @@
-#include <float.h>
 #include "lib.h"
+#include <float.h>
 #include <limits.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <math.h>
 
 int **create_int_mat(int size, bool randomize, int limit, int shift)
 {
@@ -26,7 +26,7 @@ int **create_int_mat(int size, bool randomize, int limit, int shift)
     return matrix;
 }
 
-double **create_double_mat(int size, bool randomize, int limit, int shift)
+double **create_double_mat(int size, bool randomize, double limit, double shift)
 {
     if(size<2) {
     size = 2;
@@ -49,7 +49,7 @@ int generate_random_int_value(int limit, int shift) {
     int rand_val;
     int random_value;
     if (limit > 0) {
-        rand_val = (int)rand() % limit;
+        rand_val = (int)random() % limit;
         if (shift > 0 && rand_val > INT_MAX - shift) {
             random_value = INT_MAX; // Prevent integer overflow
         } else if (shift < 0 && rand_val < INT_MIN - shift) {
@@ -58,7 +58,7 @@ int generate_random_int_value(int limit, int shift) {
             random_value = rand_val + shift; // Random value generation with limit and shift
         }
     } else if (limit < 0) {
-        rand_val = -((int)rand() % -limit);
+        rand_val = -((int)random() % -limit);
         if (shift > 0 && rand_val > INT_MAX - shift) {
             random_value = INT_MAX; // Prevent integer overflow
         } else if (shift < 0 && rand_val < INT_MIN - shift) {
@@ -67,7 +67,7 @@ int generate_random_int_value(int limit, int shift) {
             random_value = rand_val + shift; // Invert limit and make values negative
         }
     } else {
-        rand_val = (int)rand();
+        rand_val = (int)random();
         if (shift > 0 && rand_val > INT_MAX - shift) {
             random_value = INT_MAX; // Prevent integer overflow
         } else if (shift < 0 && rand_val < INT_MIN - shift) {
@@ -83,7 +83,7 @@ double generate_random_double_value(double limit, double shift) {
     double rand_val;
     double random_value;
     if (limit > 0) {
-        rand_val = (double)rand() / RAND_MAX * limit;
+        rand_val = (double)random() / RAND_MAX * limit;
         if (shift > 0 && rand_val > DBL_MAX - shift) {
             random_value = DBL_MAX; // Prevent double overflow
         } else if (shift < 0 && rand_val < DBL_MIN - shift) {
@@ -92,7 +92,7 @@ double generate_random_double_value(double limit, double shift) {
             random_value = rand_val + shift; // Random value generation with limit and shift
         }
     } else if (limit < 0) {
-        rand_val = -((double)rand() / RAND_MAX * -limit);
+        rand_val = -((double)random() / RAND_MAX * -limit);
         if (shift > 0 && rand_val > DBL_MAX - shift) {
             random_value = DBL_MAX; // Prevent double overflow
         } else if (shift < 0 && rand_val < DBL_MIN - shift) {
@@ -101,7 +101,7 @@ double generate_random_double_value(double limit, double shift) {
             random_value = rand_val + shift; // Invert limit and make values negative
         }
     } else {
-        rand_val = (double)rand() / RAND_MAX;
+        rand_val = (double)random() / RAND_MAX;
         if (shift > 0 && rand_val > DBL_MAX - shift) {
             random_value = DBL_MAX; // Prevent double overflow
         } else if (shift < 0 && rand_val < DBL_MIN - shift) {
@@ -114,22 +114,38 @@ double generate_random_double_value(double limit, double shift) {
 }
 
 
-int *create_arr(int size)
+int *create_int_arr(int size)
 {
     if(size<1)
     {
         return NULL;
     }
     int* arr=(int* )malloc(sizeof(int)*(unsigned)size);
+    for(int i=0;i<size;i++) {
+	arr[i]=0;
+    }    
     return arr;
 }
 
-void destroy_arr(int* arr)
+double *create_double_arr(int size)
+{
+    if(size<1)
+    {
+        return NULL;
+    }
+    double* arr=(double* )malloc(sizeof(double)*(unsigned)size);
+    for(int i=0;i<size;i++) {
+	arr[i]=0;
+	}
+    return arr;
+}
+
+void destroy_arr(void* arr)
 {
     free(arr);
 }
 
-void destroy_int_mat(int **matrix, int size)
+void destroy_mat(void **matrix, int size)
 {
 	for (int i = 0; i < size; i++) {
 		free(matrix[i]);
@@ -137,13 +153,6 @@ void destroy_int_mat(int **matrix, int size)
 	free(matrix);
 }
 
-void destroy_double_mat(double **matrix, int size)
-{
-	for (int i = 0; i < size; i++) {
-		free(matrix[i]);
-	}
-	free(matrix);
-}
 
 void square_mat(int **mat_in, int **mat_out, int size)
 {
@@ -247,7 +256,7 @@ bool adj_reverse_mat(double **mat_in, double **mat_out, int size) {
     // Calculate the determinant of the input matrix
     double det = get_determinant(mat_in, size);
     // If the determinant is zero, the inverse matrix does not exist
-    if (det == 0) {
+    if (fabs(det) < 1e-9) {
         return false;
     }
     // Calculate the adjugate matrix
@@ -255,58 +264,67 @@ bool adj_reverse_mat(double **mat_in, double **mat_out, int size) {
     get_adj_matrix(mat_in, adj, size);
 
     // Calculate the inverse matrix
-    for (int i = 0; i < size; i++)
-        for (int j = 0; j < size; j++)
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
             mat_out[i][j] = adj[i][j] / det;
-
+		}
+	}
     // Free memory
-    destroy_double_mat(adj, size);
+    destroy_mat((void**)adj, size);
     return true;
 }
 
 double get_determinant(double **mat, int size) {
-    double det = 0;
-    // If the matrix size is 1, the determinant is equal to the only element of the matrix
-    if (size == 1) {
-        return mat[0][0];
-    } else if (size == 2) {
-        // If the matrix size is 2, use the formula to calculate the determinant
-        return mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
-    } else {
-        // Otherwise use a recursive approach
+    double det = 1;
+    double **mat_clone = create_double_mat(size, false, 0, 0);
+    for (int row = 0; row < size; row++) {
         for (int col = 0; col < size; col++) {
-            // Create a submatrix of size size-1 x size-1
-            double **sub_mat = create_double_mat(size - 1, false, 0, 0);
-            for (int sub_i = 1; sub_i < size; sub_i++) {
-                int sub_j = 0;
-                for (int j = 0; j < size; j++) {
-                    if (j == col)
-                        continue;
-                    sub_mat[sub_i - 1][sub_j] = mat[sub_i][j];
-                    sub_j++;
-                }
-            }
-            // Calculate the determinant of the submatrix and add it to the total determinant
-            det += (col % 2 == 0 ? 1 : -1) * mat[0][col] * get_determinant(sub_mat, size - 1);
-            // Free memory
-            destroy_double_mat(sub_mat, size - 1);
+            mat_clone[row][col] = mat[row][col];
         }
     }
+    for (int index = 0; index < size; index++) {
+        int max_index = index;
+        for (int j = index + 1; j < size; j++) {
+            if (fabs(mat_clone[j][index]) > fabs(mat_clone[max_index][index])) {
+                max_index = j;
+            }
+        }
+        if (fabs(mat_clone[max_index][index]) < 1e-9) {
+            destroy_mat((void**)mat_clone, size);
+            return 0;
+        }
+        swap_rows((void**)mat_clone, index, max_index);
+        if (index != max_index) {
+            det = -det;
+        }
+        det *= mat_clone[index][index];
+        for (int j = index + 1; j < size; j++) {
+            mat_clone[index][j] /= mat_clone[index][index];
+        }
+        for (int j = 0; j < size; j++) {
+            if (j != index && fabs(mat_clone[j][index]) > 1e-9) {
+                for (int k = index + 1; k < size; k++) {
+                    mat_clone[j][k] -= mat_clone[index][k] * mat_clone[j][index];
+                }
+            }
+        }
+    }
+    destroy_mat((void**)mat_clone, size);
     return det;
 }
 
-
-void get_cofactor(double **mat, double **temp, int p, int q, int size) {
-    int i = 0, j = 0;
+void get_cofactor(double **mat, double **temp, int p_index, int q_index, int size) {
+    int i_index = 0;
+    int j_index = 0;
     // Iterate over all elements of the matrix
     for (int row = 0; row < size; row++) {
         for (int col = 0; col < size; col++) {
             // Skip elements from row p and column q
-            if (row != p && col != q) {
-                temp[i][j++] = mat[row][col];
-                if (j == size - 1) {
-                    j = 0;
-                    i++;
+            if (row != p_index && col != q_index) {
+                temp[i_index][j_index++] = mat[row][col];
+                if (j_index == size - 1) {
+                    j_index = 0;
+                    i_index++;
                 }
             }
         }
@@ -337,5 +355,11 @@ void get_adj_matrix(double **mat, double **adj, int size) {
         }
     }
     // Free memory
-    destroy_double_mat(temp,size);
+    destroy_mat((void**)temp,size);
+}
+
+void swap_rows(void **mat, int row1, int row2) {
+    void *temp = mat[row1];
+    mat[row1] = mat[row2];
+    mat[row2] = temp;
 }

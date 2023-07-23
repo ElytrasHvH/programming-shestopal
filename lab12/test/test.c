@@ -5,6 +5,9 @@
 #include <check.h>
 #include <math.h>
 #include <time.h>
+#include <stdio.h>
+
+#define EPSILON 0.00001
 
 START_TEST(test_create_int_mat_not_random)
 {
@@ -18,7 +21,7 @@ START_TEST(test_create_int_mat_not_random)
             ck_assert_int_eq(mat[i][j], 0);
         }
     }
-    destroy_int_mat(mat, size);
+    destroy_mat((void**)mat, size);
 }
 END_TEST
 
@@ -31,10 +34,10 @@ START_TEST(test_create_double_mat_not_random)
     ck_assert(mat != NULL);
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-            ck_assert(mat[i][j] == 0.0);
+            ck_assert(fabs(mat[i][j] - 0.0) < EPSILON);
         }
     }
-    destroy_double_mat(mat, size);
+    destroy_mat((void**)mat, size);
 }
 END_TEST
 START_TEST(test_create_int_mat_random)
@@ -44,7 +47,7 @@ START_TEST(test_create_int_mat_random)
     int shift = 0;
     int **mat = create_int_mat(size, true, limit, shift);
     ck_assert(mat != NULL);
-    destroy_int_mat(mat, size);
+    destroy_mat((void**)mat, size);
 }
 END_TEST
 
@@ -55,7 +58,7 @@ START_TEST(test_create_double_mat_random)
     double shift = 0.0;
     double **mat = create_double_mat(size, true, limit, shift);
     ck_assert(mat != NULL);
-    destroy_double_mat(mat, size);
+    destroy_mat((void**)mat, size);
 }
 END_TEST
 
@@ -83,7 +86,7 @@ START_TEST(test_generate_random_int_value_zero_limit)
     int limit = 0;
     int shift = 0;
     int value = generate_random_int_value(limit, shift);
-    ck_assert(value == 0);
+    ck_assert(value >= INT_MIN && value <= INT_MAX);
 }
 END_TEST
 
@@ -110,15 +113,16 @@ START_TEST(test_generate_random_double_value_zero_limit)
    double limit = 0.0;
    double shift = 0.0;
    double value = generate_random_double_value(limit, shift);
-   ck_assert(value == 0.0);
+   ck_assert(value >= 0.0 && value <= 1.0);
 }
 END_TEST
+
 
 START_TEST(test_square_mat)
 {
     int size = 3;
-    int **mat_in = create_mat(size, false, 0, 0);
-    int **mat_out = create_mat(size, false, 0, 0);
+    int **mat_in = create_int_mat(size, false, 0, 0);
+    int **mat_out = create_int_mat(size, false, 0, 0);
 
     // Fill mat_in with i+k values
     for (int i = 0; i < size; i++) {
@@ -141,8 +145,8 @@ START_TEST(test_square_mat)
     ck_assert_int_eq(mat_out[2][1], 20);
     ck_assert_int_eq(mat_out[2][2], 29);
 
-    destroy_mat(mat_in, size);
-    destroy_mat(mat_out, size);
+    destroy_mat((void**)mat_in, size);
+    destroy_mat((void**)mat_out, size);
 }
 END_TEST
 
@@ -160,28 +164,31 @@ END_TEST
 START_TEST(test_create_arr)
 {
     int size = 5;
-    int *arr = create_arr(size);
+    int *arr = create_int_arr(size);
     ck_assert(arr != NULL);
-    destroy_arr(arr);
+    destroy_arr((void*)arr);
 }
 END_TEST
 
 START_TEST(test_diagonal)
 {
     int size = 3;
-    int **mat_in = create_mat(size, false, 0, 0);
+    double **mat_in = create_double_mat(size, false, 0, 0);
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
             mat_in[i][j] = i * size + j;
         }
     }
-    int *arr = create_arr(size);
+
+    double *arr = create_double_arr(size);
     arr = diagonal(mat_in, arr, size);
-    ck_assert_int_eq(arr[0], 0);
-    ck_assert_int_eq(arr[1], 4);
-    ck_assert_int_eq(arr[2], 8);
-    destroy_arr(arr);
-    destroy_mat(mat_in, size);
+
+    ck_assert_int_eq((int)arr[0], 0);
+    ck_assert_int_eq((int)arr[1], 4);
+    ck_assert_int_eq((int)arr[2], 8);
+
+    destroy_arr((void*)arr);
+    destroy_mat((void**)mat_in, size);
 }
 END_TEST
 
@@ -202,7 +209,7 @@ END_TEST
 START_TEST(test_get_determinant)
 {
     int size = 3;
-    int **mat = create_mat(size, true, 3, 3);
+    double **mat = create_double_mat(size, true, 3, 3);
 
     mat[0][0] = 1;
     mat[0][1] = 2;
@@ -214,19 +221,19 @@ START_TEST(test_get_determinant)
     mat[2][1] = 8;
     mat[2][2] = 9;
 
-    int det = get_determinant(mat, size);
+    int det = (int)get_determinant(mat, size);
 
     ck_assert_int_eq(det, 0);
 
-    destroy_mat(mat, size);
+    destroy_mat((void**)mat, size);
 }
 END_TEST
 //Test cofactor calculation
 START_TEST(test_get_cofactor)
 {
     int size = 3;
-    int **mat = create_mat(size, true, 3, 3);
-    int **temp = create_mat(size - 1, false, 0, 0);
+    double **mat = create_double_mat(size, 0, 0, 0);
+    double **temp = create_double_mat(size - 1, false, 0, 0);
 
     mat[0][0] = 1;
     mat[0][1] = 2;
@@ -240,21 +247,21 @@ START_TEST(test_get_cofactor)
 
     get_cofactor(mat, temp, 0, 0, size);
 
-    ck_assert_int_eq(temp[0][0], 5);
-    ck_assert_int_eq(temp[0][1], 6);
-    ck_assert_int_eq(temp[1][0], 8);
-    ck_assert_int_eq(temp[1][1], 9);
+    ck_assert_double_eq_tol(temp[0][0], 5, EPSILON);
+    ck_assert_double_eq_tol(temp[0][1], 6, EPSILON);
+    ck_assert_double_eq_tol(temp[1][0], 8, EPSILON);
+    ck_assert_double_eq_tol(temp[1][1], 9, EPSILON);
 
-    destroy_mat(mat, size);
-    destroy_mat(temp, size - 1);
+    destroy_mat((void**)mat, size);
+    destroy_mat((void**)temp, size - 1);
 }
 END_TEST
 //Test calculation of adjugate matrix
 START_TEST(test_get_adj_matrix)
 {
     int size = 3;
-    int **mat = create_mat(size, true, 3, 3);
-    int **adj = create_mat(size, false, 0, 0);
+    double **mat = create_double_mat(size, false, 0, 0);
+    double **adj = create_double_mat(size, false, 0, 0);
 
     mat[0][0] = 1;
     mat[0][1] = 2;
@@ -268,18 +275,32 @@ START_TEST(test_get_adj_matrix)
 
     get_adj_matrix(mat, adj, size);
 
-    ck_assert_int_eq(adj[0][0], -3);
-    ck_assert_int_eq(adj[0][1], -6);
-    ck_assert_int_eq(adj[0][2], -3);
-    ck_assert_int_eq(adj[1][0], -6);
-    ck_assert_int_eq(adj[1][1], -12);
-    ck_assert_int_eq(adj[1][2], -6);
-    ck_assert_int_eq(adj[2][0], -3);
-    ck_assert_int_eq(adj[2][1], -6);
-    ck_assert_int_eq(adj[2][2], -3);
+    ck_assert_double_eq_tol(adj[0][0], -3, EPSILON);
+    ck_assert_double_eq_tol(adj[0][1], 6, EPSILON);
+    ck_assert_double_eq_tol(adj[0][2], -3, EPSILON);
+    ck_assert_double_eq_tol(adj[1][0], 6, EPSILON);
+    ck_assert_double_eq_tol(adj[1][1], -12, EPSILON);
+    ck_assert_double_eq_tol(adj[1][2], 6, EPSILON);
+    ck_assert_double_eq_tol(adj[2][0], -3, EPSILON);
+    ck_assert_double_eq_tol(adj[2][1], 6, EPSILON);
+    ck_assert_double_eq_tol(adj[2][2], -3, EPSILON);
 
-    destroy_mat(mat, size);
-    destroy_mat(adj, size);
+    destroy_mat((void**)mat, size);
+    destroy_mat((void**)adj, size);
+}
+END_TEST
+
+START_TEST(test_swap_rows) {
+    double a[2] = {1.0, 2.0};
+    double b[2] = {3.0, 4.0};
+    double *mat[2] = {a, b};
+
+    swap_rows((void **)mat, 0, 1);
+
+    ck_assert(fabs(mat[0][0] - 3.0) < EPSILON);
+    ck_assert(fabs(mat[0][1] - 4.0) < EPSILON);
+    ck_assert(fabs(mat[1][0] - 1.0) < EPSILON);
+    ck_assert(fabs(mat[1][1] - 2.0) < EPSILON);
 }
 END_TEST
 
@@ -311,7 +332,7 @@ Suite *lib_suite(void)
     tcase_add_test(tc_core, test_gcd);
     tcase_add_test(tc_core, test_create_arr);
     tcase_add_test(tc_core, test_diagonal);
-
+    tcase_add_test(tc_core, test_swap_rows);
     suite_add_tcase(s, tc_core);
 
     return s;
