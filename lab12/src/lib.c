@@ -10,6 +10,11 @@
 #include <time.h>
 #include <unistd.h>
 
+#ifdef _WIN32
+#define random() rand()
+#define srandom(seed) srand(seed)
+#endif
+
 // Function to create an integer matrix of given size
 int **create_int_mat(int size, bool randomize, int limit, int shift) {
     // Ensure the minimum size of 1 for the matrix
@@ -52,6 +57,57 @@ double **create_double_mat(int size, bool randomize, double limit, double shift)
         }
     }
     return matrix;
+}
+
+// Function to create an integer array of given size, initialized with zeros
+int *create_int_arr(int size) {
+    if (size < 1) {
+        return NULL;
+    }
+    // Allocate memory for the array and initialize its elements to zero
+    int* arr = (int *)malloc(sizeof(int) * (unsigned)size);
+    for (int i = 0; i < size; i++) {
+        arr[i] = 0;
+    }
+    return arr;
+}
+
+// Function to create a double precision array of given size, initialized with zeros
+double *create_double_arr(int size) {
+    if (size < 1) {
+        return NULL;
+    }
+    // Allocate memory for the array and initialize its elements to zero
+    double* arr = (double *)malloc(sizeof(double) * (unsigned)size);
+    for (int i = 0; i < size; i++) {
+        arr[i] = 0;
+    }
+    return arr;
+}
+
+// Function to deallocate memory allocated for an array
+void destroy_arr(void* arr) {
+    free(arr);
+}
+
+// Function to deallocate memory allocated for a matrix
+void destroy_mat(void **matrix, int size) {
+    for (int i = 0; i < size; i++) {
+        free(matrix[i]);
+    }
+    free(matrix);
+}
+
+// Helper function to increase the capacity (2x)
+void increase_capacity(double **arr, size_t *capacity) {
+    *capacity *= 2;
+    double *temp = (double *)realloc(*arr, *capacity * sizeof(double));
+    if (temp == NULL) {
+        (void)fprintf(stderr, "Ошибка перераспределения памяти для массива.\n");
+        free(*arr);
+        exit(EXIT_FAILURE);
+    }
+    *arr = temp;
 }
 
 // Function to generate a random integer value within the given limit and shift
@@ -142,44 +198,19 @@ double generate_random_double_value(double limit, double shift) {
     return random_value;
 }
 
-// Function to create an integer array of given size, initialized with zeros
-int *create_int_arr(int size) {
-    if (size < 1) {
-        return NULL;
+// Function to perform bubble sort on an integer array
+void bubble_sort(int *arr, int size) {
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
     }
-    // Allocate memory for the array and initialize its elements to zero
-    int* arr = (int *)malloc(sizeof(int) * (unsigned)size);
-    for (int i = 0; i < size; i++) {
-        arr[i] = 0;
-    }
-    return arr;
 }
 
-// Function to create a double precision array of given size, initialized with zeros
-double *create_double_arr(int size) {
-    if (size < 1) {
-        return NULL;
-    }
-    // Allocate memory for the array and initialize its elements to zero
-    double* arr = (double *)malloc(sizeof(double) * (unsigned)size);
-    for (int i = 0; i < size; i++) {
-        arr[i] = 0;
-    }
-    return arr;
-}
-
-// Function to deallocate memory allocated for an array
-void destroy_arr(void* arr) {
-    free(arr);
-}
-
-// Function to deallocate memory allocated for a matrix
-void destroy_mat(void **matrix, int size) {
-    for (int i = 0; i < size; i++) {
-        free(matrix[i]);
-    }
-    free(matrix);
-}
 
 // Function to calculate the square of an integer matrix and store the result in mat_out
 void square_mat(int **mat_in, int **mat_out, int size) {
@@ -194,38 +225,6 @@ void square_mat(int **mat_in, int **mat_out, int size) {
     }
 }
 
-// Function to find the greatest common divisor (GCD) of two integers
-int gcd(int num1, int num2) {
-    int frstnum = num1;
-    int scndnum = num2;
-
-    // Handling negative numbers by taking absolute values
-    if (frstnum < 0) {
-        frstnum = -frstnum; // GCD for negative numbers is the same as for positive, so we invert it
-    }
-    if (scndnum < 0) {
-        scndnum = -scndnum;
-    }
-
-    // Base cases
-    if (scndnum == 0 || scndnum == 1 || frstnum == scndnum) {
-        return frstnum;
-    }
-    if (frstnum == 0 || frstnum == 1) {
-        return scndnum;
-    }
-
-    // Computing GCD using the Euclidean algorithm
-    while (frstnum != scndnum) {
-        if (frstnum > scndnum) {
-            frstnum -= scndnum;
-        } else {
-            scndnum -= frstnum;
-        }
-    }
-
-    return frstnum;
-}
 
 // Function to extract the diagonal elements of a double precision matrix and store them in an array
 double *diagonal(double **mat_in, double *arr, int size) {
@@ -233,53 +232,6 @@ double *diagonal(double **mat_in, double *arr, int size) {
         *(arr + i) = *(*(mat_in + i) + i);
     }
     return arr;
-}
-
-// Function to perform bubble sort on an integer array
-void bubble_sort(int *arr, int size) {
-    for (int i = 0; i < size - 1; i++) {
-        for (int j = 0; j < size - i - 1; j++) {
-            if (arr[j] > arr[j + 1]) {
-                int temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
-            }
-        }
-    }
-}
-
-// Function to print an integer matrix to the console
-void print_int_mat(int **mat_in, int rows, int cols) {
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            if (j == 0) {
-                printf("[\t");
-            }
-            printf("%d\t", mat_in[i][j]);
-            if (j == cols - 1) {
-                printf("]\t");
-            }
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
-// Function to print a double precision matrix to the console
-void print_double_mat(double **mat_in, int rows, int cols, int prec) {
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            if (j == 0) {
-                printf("[\t");
-            }
-            printf("%.*f\t", prec, mat_in[i][j]);
-            if (j == cols - 1) {
-                printf("]\t");
-            }
-        }
-        printf("\n");
-    }
-    printf("\n");
 }
 
 // Function to calculate the inverse of a double precision matrix mat_in and store it in mat_out
@@ -512,6 +464,36 @@ double *read_input(FILE *stream, size_t *counter) {
     return arr;
 }
 
+// Helper function to read and parse the input file
+void read_and_parse_input(FILE *stream, double **arr, size_t *size, size_t *capacity) {
+    char buffer[1024];
+    char *ptr;
+    double num;
+
+    while (fgets(buffer, sizeof(buffer), stream) != NULL) {
+        ptr = buffer;
+        while (*ptr != '\0' && *ptr != '\n') {
+            skip_whitespace(&ptr);
+
+            if (*ptr == '\0' || *ptr == '\n') {
+                break; // End of line
+            }
+
+            if (parse_double(ptr, &num)) {
+                add_double_to_array(arr, size, capacity, num);
+
+                // Move ptr to the end of the parsed number
+                while (*ptr != '\0' && !isspace(*ptr) && *ptr != '\n') {
+                    ptr++;
+                }
+            } else {
+                // If the conversion fails, move the pointer to the next character
+                ptr++;
+            }
+        }
+    }
+}
+
 bool parse_double(const char *str, double *result) {
     if (str == NULL || *str == '\0') {
         return false;
@@ -614,18 +596,6 @@ bool parse_exponent(const char **str, double *num) {
     return false;
 }
 
-// Helper function to increase the capacity (2x)
-void increase_capacity(double **arr, size_t *capacity) {
-    *capacity *= 2;
-    double *temp = (double *)realloc(*arr, *capacity * sizeof(double));
-    if (temp == NULL) {
-        (void)fprintf(stderr, "Ошибка перераспределения памяти для массива.\n");
-        free(*arr);
-        exit(EXIT_FAILURE);
-    }
-    *arr = temp;
-}
-
 // Helper function to add a double to the array
 void add_double_to_array(double **arr, size_t *size, size_t *capacity, double num) {
     if (*size == *capacity) {
@@ -636,32 +606,69 @@ void add_double_to_array(double **arr, size_t *size, size_t *capacity, double nu
     (*size)++;
 }
 
-// Helper function to read and parse the input file
-void read_and_parse_input(FILE *stream, double **arr, size_t *size, size_t *capacity) {
-    char buffer[1024];
-    char *ptr;
-    double num;
-
-    while (fgets(buffer, sizeof(buffer), stream) != NULL) {
-        ptr = buffer;
-        while (*ptr != '\0' && *ptr != '\n') {
-            skip_whitespace(&ptr);
-
-            if (*ptr == '\0' || *ptr == '\n') {
-                break; // End of line
+// Function to print an integer matrix to the console
+void print_int_mat(int **mat_in, int rows, int cols) {
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (j == 0) {
+                printf("[\t");
             }
-
-            if (parse_double(ptr, &num)) {
-                add_double_to_array(arr, size, capacity, num);
-
-                // Move ptr to the end of the parsed number
-                while (*ptr != '\0' && !isspace(*ptr) && *ptr != '\n') {
-                    ptr++;
-                }
-            } else {
-                // If the conversion fails, move the pointer to the next character
-                ptr++;
+            printf("%d\t", mat_in[i][j]);
+            if (j == cols - 1) {
+                printf("]\t");
             }
         }
+        printf("\n");
     }
+    printf("\n");
+}
+
+// Function to print a double precision matrix to the console
+void print_double_mat(double **mat_in, int rows, int cols, int prec) {
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (j == 0) {
+                printf("[\t");
+            }
+            printf("%.*f\t", prec, mat_in[i][j]);
+            if (j == cols - 1) {
+                printf("]\t");
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+// Function to find the greatest common divisor (GCD) of two integers
+int gcd(int num1, int num2) {
+    int frstnum = num1;
+    int scndnum = num2;
+
+    // Handling negative numbers by taking absolute values
+    if (frstnum < 0) {
+        frstnum = -frstnum; // GCD for negative numbers is the same as for positive, so we invert it
+    }
+    if (scndnum < 0) {
+        scndnum = -scndnum;
+    }
+
+    // Base cases
+    if (scndnum == 0 || scndnum == 1 || frstnum == scndnum) {
+        return frstnum;
+    }
+    if (frstnum == 0 || frstnum == 1) {
+        return scndnum;
+    }
+
+    // Computing GCD using the Euclidean algorithm
+    while (frstnum != scndnum) {
+        if (frstnum > scndnum) {
+            frstnum -= scndnum;
+        } else {
+            scndnum -= frstnum;
+        }
+    }
+
+    return frstnum;
 }
