@@ -494,6 +494,37 @@ void read_and_parse_input(FILE *stream, double **arr, size_t *size, size_t *capa
     }
 }
 
+// Helper function to read and parse one line of input
+bool read_and_parse_line(const char *input_line, double **arr, size_t *size, size_t *capacity) {
+    char buffer[1024];
+    strncpy(buffer, input_line, sizeof(buffer));
+
+    char *ptr = buffer;
+    double num;
+
+    while (*ptr != '\0' && *ptr != '\n') {
+        skip_whitespace(&ptr);
+
+        if (*ptr == '\0' || *ptr == '\n') {
+            break; // End of line
+        }
+
+        if (parse_double(ptr, &num)) {
+            add_double_to_array(arr, size, capacity, num);
+
+            // Move ptr to the end of the parsed number
+            while (*ptr != '\0' && !isspace(*ptr) && *ptr != '\n') {
+                ptr++;
+            }
+        } else {
+            // If the conversion fails, move the pointer to the next character
+            ptr++;
+        }
+    }
+
+    return true;
+}
+
 bool parse_double(const char *str, double *result) {
     if (str == NULL || *str == '\0') {
         return false;
