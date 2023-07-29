@@ -404,128 +404,26 @@ double **convert_array_to_mat(const double *arr, size_t count, int *size) {
     return mat;
 }
 
+// Helper function to skip whitespace characters
 void skip_whitespace(char **str) {
-    while (**str != '\0' && (isspace(**str) || **str == '\n')) {
+    while (isspace(**str)) {
         (*str)++;
     }
 }
 
-double *read_input(FILE *stream, size_t *counter) {
-    size_t capacity = 10;
-    size_t size = 0;
-    double *arr = create_double_arr((int)capacity);
-
-    if (arr == NULL) {
-        (void)fprintf(stderr, "Ошибка выделения памяти для массива.\n");
-        exit(EXIT_FAILURE);
+// Helper function to parse a positive integer part from the string
+bool parse_positive_integer(const char **str, double *num) {
+    bool has_numeric_part = false;
+    while (isdigit(**str)) {
+        *num = *num * 10.0 + (**str - '0');
+        has_numeric_part = true;
+        (*str)++;
     }
-
-    char buffer[1024];
-    char *ptr;
-
-    // Read the first line of input
-    if (fgets(buffer, sizeof(buffer), stream) == NULL) {
-        // Empty input
-        *counter = 0;
-        free(arr); // Free the allocated memory
-        return NULL;
-    }
-
-    // Process the first line to extract numbers
-    ptr = buffer;
-    while (*ptr != '\0' && *ptr != '\n') {
-        if (*ptr == '\0' || *ptr == '\n') {
-            break; // End of line
-        }
-
-        skip_whitespace(&ptr);
-
-        // Parse the number
-        double num;
-        if (parse_double(ptr, &num)) {
-            if (size == capacity) {
-                increase_capacity(&arr, &capacity);
-            }
-
-            arr[size] = num;
-            size++;
-
-            // Move ptr to the end of the parsed number
-            while (*ptr != '\0' && !isspace(*ptr) && *ptr != '\n') {
-                ptr++;
-            }
-        } else {
-            // If the conversion fails, move the pointer to the next character
-            ptr++;
-        }
-    }
-
-    *counter = size;
-    return arr;
+    return has_numeric_part;
 }
 
-// Helper function to read and parse the input file
-void read_and_parse_input(FILE *stream, double **arr, size_t *size, size_t *capacity) {
-    char buffer[1024];
-    char *ptr;
-    double num;
-
-    while (fgets(buffer, sizeof(buffer), stream) != NULL) {
-        ptr = buffer;
-        while (*ptr != '\0' && *ptr != '\n') {
-            skip_whitespace(&ptr);
-
-            if (*ptr == '\0' || *ptr == '\n') {
-                break; // End of line
-            }
-
-            if (parse_double(ptr, &num)) {
-                add_double_to_array(arr, size, capacity, num);
-
-                // Move ptr to the end of the parsed number
-                while (*ptr != '\0' && !isspace(*ptr) && *ptr != '\n') {
-                    ptr++;
-                }
-            } else {
-                // If the conversion fails, move the pointer to the next character
-                ptr++;
-            }
-        }
-    }
-}
-
-// Helper function to read and parse one line of input
-bool read_and_parse_line(const char *input_line, double **arr, size_t *size, size_t *capacity) {
-    char buffer[1024];
-    strncpy(buffer, input_line, sizeof(buffer));
-
-    char *ptr = buffer;
-    double num;
-
-    while (*ptr != '\0' && *ptr != '\n') {
-        skip_whitespace(&ptr);
-
-        if (*ptr == '\0' || *ptr == '\n') {
-            break; // End of line
-        }
-
-        if (parse_double(ptr, &num)) {
-            add_double_to_array(arr, size, capacity, num);
-
-            // Move ptr to the end of the parsed number
-            while (*ptr != '\0' && !isspace(*ptr) && *ptr != '\n') {
-                ptr++;
-            }
-        } else {
-            // If the conversion fails, move the pointer to the next character
-            ptr++;
-        }
-    }
-
-    return true;
-}
-
-bool parse_double(const char *str, double *result) {
+// Custom parsing function
+bool custom_parse_double(const char *str, double *result) {
     if (str == NULL || *str == '\0') {
         return false;
     }
@@ -543,72 +441,36 @@ bool parse_double(const char *str, double *result) {
     }
 
     double num = 0.0;
-    bool has_numeric_part = parse_integer_part(&str, &num);
+    bool has_numeric_part = parse_positive_integer(&str, &num);
 
-    bool has_decimal_part = parse_decimal_part(&str, &num);
-
-    if (!has_numeric_part || has_decimal_part) {
-        return false;
-    }
-
-    parse_exponent(&str, &num);
-
-    while (isspace(*str)) {
-        str++;
-    }
-
-    if (*str != '\0') {
-        return false;
-    }
-
-    *result = negative ? -num : num;
-    return true;
-}
-
-bool parse_integer_part(const char **str, double *num) {
-    bool has_numeric_part = false;
-    while (isdigit(**str)) {
-        *num = *num * 10.0 + (**str - '0');
-        has_numeric_part = true;
-        (*str)++;
-    }
-    return has_numeric_part;
-}
-
-bool parse_decimal_part(const char **str, double *num) {
     int decimal_count = 0;
     double decimal = 0.1;
-
-    while (**str == '.' && decimal_count == 0) {
-        (*str)++;
-        decimal_count = 1;
+    if (*str == '.') {
+        str++;
+        while (isdigit(*str)) {
+            num += (*str - '0') * decimal;
+            decimal *= 0.1;
+            decimal_count++;
+            str++;
+        }
     }
 
-    while (isdigit(**str)) {
-        *num += (**str - '0') * decimal;
-        decimal *= 0.1;
-        (*str)++;
-    }
-
-    return decimal_count == 1;
-}
-
-bool parse_exponent(const char **str, double *num) {
-    if (**str == 'e' || **str == 'E') {
-        (*str)++;
+    bool has_exponent = false;
+    if (*str == 'e' || *str == 'E') {
+        has_exponent = true;
+        str++;
 
         bool exp_negative = false;
-        if (**str == '-') {
+        if (*str == '-') {
             exp_negative = true;
-            (*str)++;
-        } else if (**str == '+') {
-            (*str)++;
+            str++;
+        } else if (*str == '+') {
+            str++;
         }
 
-        int exp_val = 0;
-        while (isdigit(**str)) {
-            exp_val = exp_val * 10 + (**str - '0');
-            (*str)++;
+        double exp_val = 0.0;
+        if (!parse_positive_integer(&str, &exp_val)) {
+            return false;
         }
 
         double exp_factor = 1.0;
@@ -618,13 +480,114 @@ bool parse_exponent(const char **str, double *num) {
         }
 
         if (exp_negative) {
-            *num /= exp_factor;
+            num /= exp_factor;
         } else {
-            *num *= exp_factor;
+            num *= exp_factor;
         }
+    }
+
+    while (isspace(*str)) {
+        str++;
+    }
+
+    if (*str != '\0' && *str != '\n') {
+        return false;
+    }
+
+    if (has_numeric_part || decimal_count > 0 || has_exponent) {
+        *result = negative ? -num : num;
         return true;
     }
+
     return false;
+}
+
+double *read_input(FILE *stream, size_t *counter) {
+    char buffer[1024];
+    double *arr = NULL;
+
+    // Check if the counter is zero and the stream is empty
+    if (*counter == 0 && fgets(buffer, sizeof(buffer), stream) == NULL) {
+        (*counter)++;
+        return NULL;
+    }
+
+    size_t capacity = 10;
+    size_t size = 0;
+    arr = create_double_arr(capacity);
+
+    if (arr == NULL) {
+        (void)fprintf(stderr, "Ошибка выделения памяти для массива.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Process the first line to extract numbers
+    char *ptr = buffer;
+    while (*ptr != '\0' && *ptr != '\n') {
+        skip_whitespace(&ptr);
+
+        if (*ptr == '\0' || *ptr == '\n') {
+            break; // End of line
+        }
+
+        double num;
+        if (custom_parse_double(ptr, &num)) {
+            if (size == capacity) {
+                increase_capacity(&arr, &capacity);
+            }
+
+            arr[size] = num;
+            size++;
+
+            // Move ptr to the end of the parsed number
+            while (*ptr != '\0' && !isspace(*ptr) && *ptr != '\n') {
+                ptr++;
+            }
+        } else {
+            // If the conversion fails, move the pointer to the next character
+            ptr++;
+        }
+    }
+
+    if (size == 0) {
+        // If nothing was parsed, free the allocated memory and return NULL
+        free(arr);
+        arr = NULL;
+    }
+
+    *counter = size;
+    return arr;
+}
+
+// Helper function to read and parse one line of input
+bool read_and_parse_line(const char *input_line, double **arr, size_t *size, size_t *capacity) {
+    char buffer[1024];
+    strncpy(buffer, input_line, sizeof(buffer));
+
+    char *ptr = buffer;
+    double num;
+
+    while (*ptr != '\0' && *ptr != '\n') {
+        skip_whitespace(&ptr);
+
+        if (*ptr == '\0' || *ptr == '\n') {
+            break; // End of line
+        }
+
+        if (custom_parse_double(ptr, &num)) {
+            add_double_to_array(arr, size, capacity, num);
+
+            // Move ptr to the end of the parsed number
+            while (*ptr != '\0' && !isspace(*ptr) && *ptr != '\n') {
+                ptr++;
+            }
+        } else {
+            // If the conversion fails, move the pointer to the next character
+            ptr++;
+        }
+    }
+
+    return true;
 }
 
 // Helper function to add a double to the array

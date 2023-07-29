@@ -24,7 +24,7 @@
  * @param shift     Зсув для випадкових значень елементів.
  * @return          Вказівник на створений масив цілих чисел.
  */
-int **create_int_mat(int size, bool randomize, int limit, int shift);
+int **create_int_mat(size_t size, bool randomize, int limit, int shift);
 
 /**
  * Створює двовимірний масив дійсних чисел.
@@ -35,7 +35,7 @@ int **create_int_mat(int size, bool randomize, int limit, int shift);
  * @param shift     Зсув для випадкових значень елементів.
  * @return          Вказівник на створений масив дійсних чисел.
  */
-double **create_double_mat(int size, bool randomize, double limit, double shift);
+double **create_double_mat(size_t size, bool randomize, double limit, double shift);
 
 /**
  * Створює масив цілих чисел.
@@ -43,7 +43,7 @@ double **create_double_mat(int size, bool randomize, double limit, double shift)
  * @param size Розмір масиву.
  * @return    Вказівник на створений масив цілих чисел.
  */
-int *create_int_arr(int size);
+int *create_int_arr(size_t size);
 
 /**
  * Створює масив дійсних чисел.
@@ -51,7 +51,7 @@ int *create_int_arr(int size);
  * @param size Розмір масиву.
  * @return    Вказівник на створений масив дійсних чисел.
  */
-double *create_double_arr(int size);
+double *create_double_arr(size_t size);
 
 /**
  * Звільняє пам'ять, видалення масиву або матриці.
@@ -66,7 +66,7 @@ void destroy_arr(void *arr);
  * @param matrix Вказівник на двовимірний масив.
  * @param size   Розмір масиву (кількість рядків).
  */
-void destroy_mat(void **matrix, int size);
+void destroy_mat(void **matrix, size_t size);
 
 /**
  * Генерує випадкове дійсне число в заданому діапазоні.
@@ -190,6 +190,31 @@ void get_adj_matrix(double **mat, double **adj, int size);
 void swap_rows(void **mat, int row1, int row2);
 
 /**
+ * Пропускає пробіли та символи табуляції в рядку.
+ *
+ * @param str Вказівник на рядок, який буде пересунуто на перший символ після пробілів.
+ */
+void skip_whitespace(char **str);
+
+/**
+ * Парсить додатнє ціле число з рядка та повертає його значення.
+ *
+ * @param str  Вказівник на рядок, який буде проаналізовано.
+ * @param num  Вказівник, в який буде записане знайдене ціле число.
+ * @return     True, якщо парсинг вдалий, інакше False.
+ */
+bool parse_positive_integer(const char **str, double *num); 
+
+/**
+ * Парсить дійсне число з рядка з додатковими опціями.
+ *
+ * @param str     Вказівник на рядок, який буде проаналізовано.
+ * @param result  Вказівник, в який буде записане знайдене дійсне число.
+ * @return        True, якщо парсинг вдалий, інакше False.
+ */
+bool custom_parse_double(const char *str, double *result);
+
+/**
  * Зчитує вхідні дані з файлового потоку і повертає масив чисел.
  *
  * @param stream Вказівник на файловий поток.
@@ -216,48 +241,6 @@ bool prompt_for_input(FILE *stream);
  */
 double **convert_array_to_mat(const double *arr, size_t count, int *size);
 
-/**
- * Пропускає пробіли та символи табуляції в рядку.
- *
- * @param str Вказівник на рядок, який буде пересунуто на перший символ після пробілів.
- */
-void skip_whitespace(char **str);
-
-/**
- * Парсить рядок як дійсне число з плаваючою точкою.
- *
- * @param str    Вказівник на рядок, який треба проаналізувати.
- * @param result Вказівник, куди буде записано результат парсингу.
- * @return       True, якщо парсинг вдалося, інакше False.
- */
-bool parse_double(const char *str, double *result);
-
-/**
- * Зчитує та парсить рядок як двійковий показник числа з плаваючою точкою.
- *
- * @param str Вказівник на рядок, який треба проаналізувати.
- * @param num Вказівник, куди буде записано результат парсингу.
- * @return    True, якщо парсинг вдалося, інакше False.
- */
-bool parse_exponent(const char **str, double *num);
-
-/**
- * Зчитує та парсить рядок як десяткову частину числа з плаваючою точкою.
- *
- * @param str Вказівник на рядок, який треба проаналізувати.
- * @param num Вказівник, куди буде записано результат парсингу.
- * @return    True, якщо парсинг вдалося, інакше False.
- */
-bool parse_decimal_part(const char **str, double *num);
-
-/**
- * Зчитує та парсить рядок як цілу частину числа з плаваючою точкою.
- *
- * @param str Вказівник на рядок, який треба проаналізувати.
- * @param num Вказівник, куди буде записано результат парсингу.
- * @return    True, якщо парсинг вдалося, інакше False.
- */
-bool parse_integer_part(const char **str, double *num);
 
 /**
  * Зчитує та парсить рядок з введеними користувачем даними про числа з плаваючою точкою.
@@ -269,5 +252,8 @@ bool parse_integer_part(const char **str, double *num);
  * @return           True, якщо парсинг вдалося, інакше False.
  */
 bool read_and_parse_line(const char *input_line, double **arr, size_t *size, size_t *capacity);
+
+
+void add_double_to_array(double **arr, size_t *size, size_t *capacity, double num);
 
 #endif

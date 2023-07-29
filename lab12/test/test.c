@@ -11,7 +11,7 @@
 
 START_TEST(test_create_int_mat_not_random)
 {
-    int size = 3;
+    size_t size = 3;
     int limit = 10;
     int shift = 0;
     int **mat = create_int_mat(size, false, limit, shift);
@@ -27,7 +27,7 @@ END_TEST
 
 START_TEST(test_create_double_mat_not_random)
 {
-    int size = 3;
+    size_t size = 3;
     double limit = 10.0;
     double shift = 0.0;
     double **mat = create_double_mat(size, false, limit, shift);
@@ -42,7 +42,7 @@ START_TEST(test_create_double_mat_not_random)
 END_TEST
 START_TEST(test_create_int_mat_random)
 {
-    int size = 3;
+    size_t size = 3;
     int limit = 10;
     int shift = 0;
     int **mat = create_int_mat(size, true, limit, shift);
@@ -53,7 +53,7 @@ END_TEST
 
 START_TEST(test_create_double_mat_random)
 {
-    int size = 3;
+    size_t size = 3;
     double limit = 10.0;
     double shift = 0.0;
     double **mat = create_double_mat(size, true, limit, shift);
@@ -231,7 +231,7 @@ END_TEST
 //Test cofactor calculation
 START_TEST(test_get_cofactor)
 {
-    int size = 3;
+    size_t size = 3;
     double **mat = create_double_mat(size, 0, 0, 0);
     double **temp = create_double_mat(size - 1, false, 0, 0);
 
@@ -259,7 +259,7 @@ END_TEST
 //Test calculation of adjugate matrix
 START_TEST(test_get_adj_matrix)
 {
-    int size = 3;
+    size_t size = 3;
     double **mat = create_double_mat(size, false, 0, 0);
     double **adj = create_double_mat(size, false, 0, 0);
 
@@ -304,6 +304,63 @@ START_TEST(test_swap_rows) {
 }
 END_TEST
 
+// Test skip_whitespace function
+START_TEST(test_skip_whitespace)
+{
+    const char *str = "   \t\tHello, world!";
+    skip_whitespace(&str);
+    ck_assert_str_eq(str, "Hello, world!");
+}
+END_TEST
+
+// Test parse_positive_integer function
+START_TEST(test_parse_positive_integer)
+{
+    const char *str1 = "42";
+    double num1;
+    ck_assert(parse_positive_integer(&str1, &num1));
+    ck_assert(num1 == 42);
+
+    const char *str2 = "  123 456";
+    double num2;
+    ck_assert(parse_positive_integer(&str2, &num2));
+    ck_assert(num2 == 123);
+
+    const char *str3 = "   0";
+    double num3;
+    ck_assert(parse_positive_integer(&str3, &num3));
+    ck_assert(num3 == 0);
+
+    const char *str4 = "    -100";
+    double num4;
+    ck_assert(!parse_positive_integer(&str4, &num4)); // Should fail for negative values
+}
+END_TEST
+
+// Test custom_parse_double function
+START_TEST(test_custom_parse_double)
+{
+    const char *str1 = "3.14159";
+    double result1;
+    ck_assert(custom_parse_double(str1, &result1));
+    ck_assert(fabs(result1 - 3.14159) < EPSILON);
+
+    const char *str2 = "  2.71828  ";
+    double result2;
+    ck_assert(custom_parse_double(str2, &result2));
+    ck_assert(fabs(result2 - 2.71828) < EPSILON);
+
+    const char *str3 = " -10.5 ";
+    double result3;
+    ck_assert(custom_parse_double(str3, &result3));
+    ck_assert(fabs(result3 - (-10.5)) < EPSILON);
+
+    const char *str4 = "not_a_number";
+    double result4;
+    ck_assert(!custom_parse_double(str4, &result4)); // Should fail for non-numeric input
+}
+END_TEST
+
 Suite *lib_suite(void)
 {
     Suite *s;
@@ -333,6 +390,9 @@ Suite *lib_suite(void)
     tcase_add_test(tc_core, test_create_arr);
     tcase_add_test(tc_core, test_diagonal);
     tcase_add_test(tc_core, test_swap_rows);
+    tcase_add_test(tc_core, test_skip_whitespace);
+    tcase_add_test(tc_core, test_parse_positive_integer);
+    tcase_add_test(tc_core, test_custom_parse_double);
     suite_add_tcase(s, tc_core);
 
     return s;
