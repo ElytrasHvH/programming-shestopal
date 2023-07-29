@@ -16,15 +16,15 @@
 #endif
 
 // Function to create an integer matrix of given size
-int **create_int_mat(int size, bool randomize, int limit, int shift) {
+int **create_int_mat(size_t size, bool randomize, int limit, int shift) {
     // Ensure the minimum size of 1 for the matrix
     if (size < 1) {
         size = 1;
     }
     // Allocate memory for the matrix
-    int **matrix = (int **)malloc(sizeof(int *) * (unsigned)size);
+    int **matrix = (int **)malloc(sizeof(int *) * size);
     for (int i = 0; i < size; i++) {
-        matrix[i] = (int *)malloc(sizeof(int) * (unsigned)size);
+        matrix[i] = (int *)malloc(sizeof(int) * size);
         for (int j = 0; j < size; j++) {
             // Randomize matrix elements if 'randomize' is true, otherwise initialize with zeros
             if (randomize) {
@@ -38,15 +38,15 @@ int **create_int_mat(int size, bool randomize, int limit, int shift) {
 }
 
 // Function to create a double precision matrix of given size
-double **create_double_mat(int size, bool randomize, double limit, double shift) {
+double **create_double_mat(size_t size, bool randomize, double limit, double shift) {
     // Ensure the minimum size of 1 for the matrix
     if (size < 1) {
         size = 1;
     }
     // Allocate memory for the matrix
-    double **matrix = (double **)malloc(sizeof(double *) * (unsigned)size);
+    double **matrix = (double **)malloc(sizeof(double *) * size);
     for (int i = 0; i < size; i++) {
-        matrix[i] = (double *)malloc(sizeof(double) * (unsigned)size);
+        matrix[i] = (double *)malloc(sizeof(double) * size);
         for (int j = 0; j < size; j++) {
             // Randomize matrix elements if 'randomize' is true, otherwise initialize with zeros
             if (randomize) {
@@ -60,7 +60,7 @@ double **create_double_mat(int size, bool randomize, double limit, double shift)
 }
 
 // Function to create an integer array of given size, initialized with zeros
-int *create_int_arr(int size) {
+int *create_int_arr(size_t size) {
     if (size < 1) {
         return NULL;
     }
@@ -73,7 +73,7 @@ int *create_int_arr(int size) {
 }
 
 // Function to create a double precision array of given size, initialized with zeros
-double *create_double_arr(int size) {
+double *create_double_arr(size_t size) {
     if (size < 1) {
         return NULL;
     }
@@ -91,7 +91,7 @@ void destroy_arr(void* arr) {
 }
 
 // Function to deallocate memory allocated for a matrix
-void destroy_mat(void **matrix, int size) {
+void destroy_mat(void **matrix, size_t size) {
     for (int i = 0; i < size; i++) {
         free(matrix[i]);
     }
@@ -413,7 +413,7 @@ void skip_whitespace(char **str) {
 double *read_input(FILE *stream, size_t *counter) {
     size_t capacity = 10;
     size_t size = 0;
-    double *arr = (double *)malloc(capacity * sizeof(double));
+    double *arr = create_double_arr((int)capacity);
 
     if (arr == NULL) {
         (void)fprintf(stderr, "Ошибка выделения памяти для массива.\n");
