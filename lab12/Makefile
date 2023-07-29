@@ -13,7 +13,7 @@ prep:
 compile: main
 
 main: dist/main.o dist/lib.o
-	$(CC) $(C_OPTS) $^ -o ./dist/main.bin
+	$(CC) $(C_OPTS) $^ -o ./dist/main.bin -lm
 
 dist/main.o: src/main.c
 	$(CC) $(C_OPTS) -c $^ -o $@
