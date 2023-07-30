@@ -6,6 +6,7 @@
  * @brief Заголовочний файл з декларацією та описом функцій і структур бібліотеки
  */
 
+#include <ctype.h>
 #include <float.h>
 #include <limits.h>
 #include <math.h>
@@ -129,7 +130,7 @@ void bubble_sort(int *arr, int size);
  * @param rows   Кількість рядків у матриці.
  * @param cols   Кількість стовпців у матриці.
  */
-void print_int_mat(int **mat_in, int rows, int cols);
+void print_int_mat(int **mat_in, size_t rows, size_t cols);
 
 /**
  * Виводить на екран дійсну матрицю з заданою точністю.
@@ -139,7 +140,7 @@ void print_int_mat(int **mat_in, int rows, int cols);
  * @param cols   Кількість стовпців у матриці.
  * @param prec   Точність чисел після десяткової коми.
  */
-void print_double_mat(double **mat_in, int rows, int cols, int prec);
+void print_double_mat(double **mat_in, size_t rows, size_t cols, int prec);
 
 /**
  * Обчислює обернену матрицю для дійсної матриці.
@@ -149,7 +150,7 @@ void print_double_mat(double **mat_in, int rows, int cols, int prec);
  * @param size    Розмір квадратної матриці.
  * @return        True, якщо матрицю вдалося обчислити, інакше False.
  */
-bool adj_reverse_mat(double **mat_in, double **mat_out, int size);
+bool adj_reverse_mat(double **mat_in, double **mat_out, size_t size);
 
 /**
  * Обчислює визначник квадратної матриці.
@@ -158,7 +159,7 @@ bool adj_reverse_mat(double **mat_in, double **mat_out, int size);
  * @param size Розмір квадратної матриці.
  * @return     Значення визначника матриці.
  */
-double get_determinant(double **mat, int size);
+double get_determinant(double **mat, size_t size);
 
 /**
  * Обчислює доповнення до заданого елементу матриці.
@@ -169,7 +170,7 @@ double get_determinant(double **mat, int size);
  * @param q     Стовпець елемента, для якого знаходимо доповнення.
  * @param size  Розмір квадратної матриці.
  */
-void get_cofactor(double **mat, double **temp, int p, int q, int size);
+void get_cofactor(double **mat, double **temp, size_t p_index, size_t q_index, size_t size);
 
 /**
  * Обчислює матрицю ад'юнкту для заданої матриці.
@@ -178,7 +179,7 @@ void get_cofactor(double **mat, double **temp, int p, int q, int size);
  * @param adj   Матриця, куди буде записана ад'юнкта.
  * @param size  Розмір квадратної матриці.
  */
-void get_adj_matrix(double **mat, double **adj, int size);
+void get_adj_matrix(double **mat, double **adj, size_t size);
 
 /**
  * Міняє місцями два рядки в двовимірному масиві.
@@ -187,24 +188,20 @@ void get_adj_matrix(double **mat, double **adj, int size);
  * @param row1  Індекс першого рядка.
  * @param row2  Індекс другого рядка.
  */
-void swap_rows(void **mat, int row1, int row2);
+void swap_rows(void **mat, size_t row1, size_t row2);
 
 /**
  * Пропускає пробіли та символи табуляції в рядку.
  *
  * @param str Вказівник на рядок, який буде пересунуто на перший символ після пробілів.
  */
-void skip_whitespace(char **str);
+const char* skip_whitespace(const char *str);
 
-/**
- * Парсить додатнє ціле число з рядка та повертає його значення.
- *
- * @param str  Вказівник на рядок, який буде проаналізовано.
- * @param num  Вказівник, в який буде записане знайдене ціле число.
- * @return     True, якщо парсинг вдалий, інакше False.
- */
-bool parse_positive_integer(const char **str, double *num); 
+bool parse_sign(const char** str, bool* negative);
 
+bool parse_numeric_part(const char** str, double* num, int* decimal_count);
+
+bool parse_exponent(const char** str, int* exp_val, bool* exp_negative);
 /**
  * Парсить дійсне число з рядка з додатковими опціями.
  *
@@ -221,7 +218,7 @@ bool custom_parse_double(const char *str, double *result);
  * @param count  Вказівник, який зберігає кількість зчитаних чисел.
  * @return       Вказівник на масив з числами.
  */
-double *read_input(FILE *stream, size_t *count);
+double *read_input(FILE *stream,size_t *count);
 
 /**
  * Запитує користувача про введення даних з файлового потоку.
@@ -239,7 +236,7 @@ bool prompt_for_input(FILE *stream);
  * @param size     Вказівник на змінну, в яку буде записано розмір матриці.
  * @return         Вказівник на двовимірний масив (матрицю).
  */
-double **convert_array_to_mat(const double *arr, size_t count, int *size);
+double **convert_array_to_mat(const double *arr, size_t count, size_t *size);
 
 
 /**

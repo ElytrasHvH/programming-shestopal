@@ -5,7 +5,7 @@
 #include <time.h>
 
 int main(void) {
-    printf("\n\tАвтор: Шестопал Дмитро Олексійович КН922Б.\n\t\tЛабораторна №12.\n\tЗавдання: Визначити зворотню матрицю\n");
+    //printf("\n\tАвтор: Шестопал Дмитро Олексійович КН922Б.\n\t\tЛабораторна №12.\n\tЗавдання: Визначити зворотню матрицю\n");
     srand((unsigned int)time(NULL));
 
     double **mat_in = NULL;
@@ -19,7 +19,7 @@ int main(void) {
 
     double *arr = NULL;
     while (arr == NULL) {
-        arr = read_input(stdin, &count);
+        arr = read_input(stdin,&count);
         if (arr == NULL && feof(stdin)) {
             printf("No input given. Exiting(arr).\n");
             return 0;
@@ -28,11 +28,11 @@ int main(void) {
 
     if (count == 0) {
         printf("No input entered. Exiting(count).\n");
-        destroy_arr((void*)arr);
+        free(arr); // Make sure to free the allocated memory
         return 0;
     }
 
-    if (size == (int)ceil(sqrt((double)count)) * (int)ceil(sqrt((double)count))) {
+    if (size == (size_t)ceil(sqrt((double)count)) * (size_t)ceil(sqrt((double)count))) {
         mat_in = convert_array_to_mat(arr, count, &size);
         mat_out = create_double_mat(size, 0, 0, 0);
         exist = adj_reverse_mat(mat_in, mat_out, size);
