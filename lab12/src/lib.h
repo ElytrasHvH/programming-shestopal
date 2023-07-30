@@ -55,6 +55,21 @@ int *create_int_arr(size_t size);
 double *create_double_arr(size_t size);
 
 /**
+ * Створює строку массив символів
+ * 
+ * @param size Розмір массиву
+ * @return Вказівник на массив
+*/
+char* create_char_arr(size_t size);
+
+/**
+ * Створює строку
+ * 
+ * @param size розмір строки
+ * @return Вказівник на строку
+*/
+char* create_string(size_t size);
+/**
  * Звільняє пам'ять, видалення масиву або матриці.
  *
  * @param arr Вказівник на масив або матрицю.
@@ -212,13 +227,14 @@ bool parse_exponent(const char** str, int* exp_val, bool* exp_negative);
 bool custom_parse_double(const char *str, double *result);
 
 /**
- * Зчитує вхідні дані з файлового потоку і повертає масив чисел.
+ * Зчитує вхідні дані з потоку і повертає строку.
  *
  * @param stream Вказівник на файловий поток.
- * @param count  Вказівник, який зберігає кількість зчитаних чисел.
- * @return       Вказівник на масив з числами.
+ * @param size Вказівник, який кількість символів у строці
+ * @param count  Вказівник, який зберігає кількість викликів функцій.
+ * @return       Вказівник на строку данних.
  */
-double *read_input(FILE *stream,size_t *count);
+char* read_input(FILE *stream,size_t *counter);
 
 /**
  * Запитує користувача про введення даних з файлового потоку.

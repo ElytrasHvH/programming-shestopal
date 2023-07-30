@@ -8,53 +8,36 @@ int main(void) {
     //printf("\n\tАвтор: Шестопал Дмитро Олексійович КН922Б.\n\t\tЛабораторна №12.\n\tЗавдання: Визначити зворотню матрицю\n");
     srand((unsigned int)time(NULL));
 
-    double **mat_in = NULL;
-    double **mat_out = NULL;
-    size_t size = 0;
-    bool exist = false;
-    int precision = 2;
-
+    bool exist_inverse_mat = false;
+    bool exist_arr = false;
+    bool filled = false;
     size_t count = 0;
-    printf("Waiting for user input. Press ctrl+d (Linux) or ctrl+z + enter (Windows) to finish entering data.\n");
-
-    double *arr = NULL;
-    while (arr == NULL) {
-        arr = read_input(stdin,&count);
-        if (arr == NULL && feof(stdin)) {
-            printf("No input given. Exiting(arr).\n");
-            return 0;
-        }
-    }
-
-    if (count == 0) {
-        printf("No input entered. Exiting(count).\n");
-        free(arr); // Make sure to free the allocated memory
+    size_t size_mat=0;
+    size_t size_arr = 0;
+    double* *mat_in = NULL;
+    double** mat_out = NULL;
+    double* arr=create_double_arr(size_arr);
+    int precision = 2;
+    char* str=read_input(stdin,&count,&filled);
+    if(*str==0 && count == 0){
+        printf("Invalid stream");
         return 0;
     }
-
-    if (size == (size_t)ceil(sqrt((double)count)) * (size_t)ceil(sqrt((double)count))) {
-        mat_in = convert_array_to_mat(arr, count, &size);
-        mat_out = create_double_mat(size, 0, 0, 0);
-        exist = adj_reverse_mat(mat_in, mat_out, size);
-        printf("Your matrix:\n");
-        print_double_mat(mat_in, size, size, precision);
-
-        if (exist) {
-            printf("Inverse matrix:\n");
-            print_double_mat(mat_out, size, size, precision);
-            destroy_mat((void**)mat_out, size); 
-        } else {
-            printf("Inverse matrix doesn't exist for this one\n");
-        }
-        destroy_mat((void**)mat_in, size); 
-    } else {
-        printf("Amount of numbers wasn't a perfect square\nHere is the closest one to yours\n");
-        mat_in = convert_array_to_mat(arr, count, &size);
-        print_double_mat(mat_in, size, size, precision);
-        destroy_mat((void**)mat_in, size); 
+    if(count!=0){
+        printf("Do you want to give a matrix? (y/n)\n");
+        if(prompt_for_input(stdin));
+        printf("Send a matrix in 1 line\n");
+        str=read_input(stdin,&count,&filled);
     }
 
+    mat_out = create_double_mat(size_mat, 0, 0, 0);
+
+    //
+    //TODO: calculations and checks
+    //
+    destroy_mat((void**)mat_out, size_mat); 
     destroy_arr((void*)arr);
+    destroy_arr((void*)str);
 
     return 0;
 }
