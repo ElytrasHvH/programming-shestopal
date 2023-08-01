@@ -32,7 +32,7 @@ int main(void) {
     double* arr = NULL;
     double** mat_in = NULL;
     double** mat_out = NULL;
-    int prec = 5;
+    int prec = 2;
     if (parse_string(str, &arr, &size_arr) == false) {
         printf("Nothing was in the string\n");
         destroy_arr((void*)str);
