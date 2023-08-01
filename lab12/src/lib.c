@@ -468,8 +468,8 @@ bool adj_reverse_mat(double **mat_in, double **mat_out, size_t size) {
 	double det = get_determinant(mat_in, size);
 	
 	// Check if the determinant is close to zero.
-	if (fabs(det) < 1e-9) {
-		// If the determinant is close to zero, the inverse matrix does not exist.
+	if (fabs(det) < 1e-7) {
+		// If the determinant is zero, the inverse matrix does not exist (but since fp's sucks we can't use ==; rip all matrix who has determinant < 1e-9 or > -1e-9).
 		// Return false to indicate that the computation was not successful.
 		return false;
 	}
@@ -494,72 +494,117 @@ bool adj_reverse_mat(double **mat_in, double **mat_out, size_t size) {
 	// Return true to indicate that the computation was successful and the inverse matrix is obtained.
 	return true;
 }
-// Function to compute the determinant of a square matrix using Gaussian elimination.
-// Parameters:
-//   - mat: A pointer to the input square matrix (2D double array).
-//   - size: The size of the square matrix (number of rows and columns).
-// Returns:
-//   - The determinant of the input matrix.
 
-double get_determinant(double **mat, size_t size) {
-	// Initialize the determinant to 1.
-	double det = 1;
-	
-	// Create a temporary matrix mat_clone to hold a copy of the input matrix mat.
-	// This allows us to perform row operations without modifying the original matrix.
-	double **mat_clone = create_double_mat(size, false, 0, 0);
-	for (size_t row = 0; row < size; row++) {
-		for (size_t col = 0; col < size; col++) {
-			mat_clone[row][col] = mat[row][col];
-		}
-	}
+// Function to perform LU decomposition with partial pivoting
+// This function takes the input matrix `mat`, its `size` (number of rows/columns),
+// and performs LU decomposition with partial pivoting. LU decomposition
+// represents the matrix as the product of a lower triangular matrix (L)
+// and an upper triangular matrix (U). It also keeps track of row swaps using `pivot` array.
+void lu_decomposition(double** mat, size_t size, double** lu_matrix, int* pivot) {
+    // Initialize LU matrix with the input matrix (copying data)
+    for (size_t i = 0; i < size; i++) {
+        for (size_t j = 0; j < size; j++) {
+            lu_matrix[i][j] = mat[i][j];
+        }
+    }
 
-	// Perform Gaussian elimination to transform the matrix to upper triangular form.
-	// The outer loop iterates over each row of the matrix.
-	for (size_t index = 0; index < size; index++) {
-		// Find the row with the maximum absolute value in the current column (index).
-		size_t max_index = index;
-		for (size_t j = index + 1; j < size; j++) {
-			if (fabs(mat_clone[j][index]) > fabs(mat_clone[max_index][index])) {
-				max_index = j;
-			}
-		}
+    // Initialize pivot array
+    for (int i = 0; i < size; i++) {
+        pivot[i] = i;
+    }
 
-		// If the pivot element (maximum value in the current column) is close to zero,
-		// the matrix is singular, and the determinant is zero.
-		if (fabs(mat_clone[max_index][index]) < 1e-9) {
-			// Free the memory allocated for the temporary matrix mat_clone and return zero determinant.
-			destroy_mat((void**)mat_clone, size);
-			return 0;
-		}
+    // Perform LU decomposition
+    for (size_t i = 0; i < size; i++) {
+        // Find the row with the maximum absolute value in the current column (i).
+        size_t max_index = i;
+        for (size_t j = i + 1; j < size; j++) {
+            if (fabs(lu_matrix[j][i]) > fabs(lu_matrix[max_index][i])) {
+                max_index = j;
+            }
+        }
 
-		// Swap the rows to move the pivot element to the current row (index).
-		swap_rows((void**)mat_clone, index, max_index);
+        // Swap the rows to move the pivot element to the current row (i).
+        if (max_index != i) {
+            for (size_t j = 0; j < size; j++) {
+                double temp = lu_matrix[i][j];
+                lu_matrix[i][j] = lu_matrix[max_index][j];
+                lu_matrix[max_index][j] = temp;
+            }
 
-		// Update the determinant by multiplying it with the pivot element.
-		det *= mat_clone[index][index];
+            // Update the pivot array to keep track of row swaps.
+            int temp_pivot = pivot[i];
+            pivot[i] = pivot[max_index];
+            pivot[max_index] = temp_pivot;
+        }
 
-		// Scale the current row (index) to make the pivot element equal to 1.
-		for (size_t j = index + 1; j < size; j++) {
-			mat_clone[index][j] /= mat_clone[index][index];
-		}
-
-		// Eliminate the non-zero elements below the pivot element in the current column.
-		for (size_t j = 0; j < size; j++) {
-			if (j != index && fabs(mat_clone[j][index]) > 1e-9) {
-				for (size_t k = index + 1; k < size; k++) {
-					mat_clone[j][k] -= mat_clone[index][k] * mat_clone[j][index];
-				}
-			}
-		}
-	}
-
-	// Free the memory allocated for the temporary matrix mat_clone.
-	destroy_mat((void**)mat_clone, size);
-
-	// Return the computed determinant.
-	return det;
+        // Eliminate the non-zero elements below the pivot element in the current column.
+        for (size_t j = i + 1; j < size; j++) {
+            lu_matrix[j][i] /= lu_matrix[i][i];
+            for (size_t k = i + 1; k < size; k++) {
+                lu_matrix[j][k] -= lu_matrix[j][i] * lu_matrix[i][k];
+            }
+        }
+    }
 }
+
+
+// Function to compute the determinant from LU decomposition
+// This function takes the LU matrix obtained from `lu_decomposition`,
+// its `size` (number of rows/columns), and `pivot` array to adjust the sign of the determinant
+// based on the number of row swaps performed during LU decomposition.
+// The determinant is computed as the product of diagonal elements of LU matrix.
+double determinant_from_lu(double** lu_matrix, size_t size, int* pivot)  {
+    double det = 1.0;
+    for (size_t i = 0; i < size; i++) {
+        det *= lu_matrix[i][i];
+    }
+
+    // Adjust the sign of the determinant based on the number of row swaps
+    int sign = 1;
+    for (size_t i = 0; i < size; i++) {
+        if (i != pivot[i]) {
+            sign *= -1;
+        }
+    }
+
+    return det * sign;
+}
+
+// Function to get the determinant of the matrix
+// This is the main function to get the determinant of the input matrix `mat`.
+// It uses LU decomposition with partial pivoting to compute the determinant
+// without modifying the original matrix.
+// The function first creates a temporary matrix `mat_clone` to hold a copy of `mat`.
+// Then it creates LU matrix and `pivot` array for LU decomposition.
+// The LU decomposition is performed, and the determinant is computed using `determinant_from_lu`.
+// Finally, the temporary matrices are freed, and the determinant is returned.
+double get_determinant(double** mat, size_t size) {
+    // Create a temporary matrix mat_clone for LU decomposition
+    double **mat_clone = create_double_mat(size, false, 0, 0);
+    for (size_t row = 0; row < size; row++) {
+        for (size_t col = 0; col < size; col++) {
+            mat_clone[row][col] = mat[row][col];
+        }
+    }
+
+    // Create LU matrix and pivot array for LU decomposition
+    double **lu_matrix = create_double_mat(size, false, 0, 0);
+    int *pivot = malloc(size * sizeof(int));
+
+    // Perform LU decomposition
+    lu_decomposition(mat, size, lu_matrix, pivot);
+
+    // Compute determinant from LU decomposition
+    double det = determinant_from_lu(lu_matrix, size, pivot);
+
+    // Free allocated memory
+    destroy_mat((void**)mat_clone, size);
+    destroy_mat((void**)lu_matrix, size);
+    free(pivot);
+
+    return det;
+}
+
 // Function to compute the cofactor matrix of a given element in a square matrix.
 // The cofactor matrix is obtained by removing the row and column containing the specified element.
 // Parameters:
@@ -650,50 +695,16 @@ void swap_rows(void **mat, size_t row1, size_t row2) {
 	mat[row1] = mat[row2];
 	mat[row2] = temp;
 }
-// Function to convert a 1D array of double values into a 2D square matrix.
-// The size of the square matrix is determined based on the number of elements in the array.
-// If the number of elements is a perfect square, a square matrix of that size is created.
-// If not, the smallest square matrix that can accommodate all elements is created, with extra elements initialized to 0.0.
-// Parameters:
-//   - arr: A pointer to the 1D array of double values.
-//   - count: The number of elements in the array.
-//   - size: A pointer to the size of the resulting square matrix (output parameter).
-// Returns:
-//   - A pointer to the 2D square matrix (array of pointers to rows).
+
 double **convert_array_to_mat(const double *arr, size_t count, size_t *size) {
-	// Calculate the square root of the count and round it to determine the size of the square matrix.
-	*size = (size_t)round(sqrt((double)count));
-
-	// If the size is such that the matrix can be perfectly square, create the square matrix.
-	if (*size * *size == count) {
-		double **mat = create_double_mat(*size, 0, 0, 0);
-		for (size_t i = 0; i < *size; i++) {
-			for (size_t j = 0; j < *size; j++) {
-				if (i * *size + j < count) {
-					mat[i][j] = arr[i * *size + j];
-				} else {
-					mat[i][j] = 0.0;
-				}
-			}
+    (*size) = get_int_square_root((int)count);
+	double** mat_out = create_double_mat(*size,0,0,0);
+    for (size_t i = 0; i < *size; i++) {
+		for(size_t j = 0; j < *size; j++){
+			mat_out[i][j]=arr[(*size)*i+j];
 		}
-		return mat;
-	}
-	// If the matrix cannot be perfectly square, calculate the smallest square matrix that can hold all elements.
-	// Round up the square root of count to determine the size.
-	*size = (size_t)ceil(sqrt((double)count));
-
-	// Create the square matrix with extra elements initialized to 0.0.
-	double **mat = create_double_mat(*size, 0, 0, 0);
-	for (size_t i = 0; i < *size; i++) {
-		for (size_t j = 0; j < *size; j++) {
-			if (i * *size + j < count) {
-				mat[i][j] = arr[i * *size + j];
-			} else {
-				mat[i][j] = 0.0;
-			}
-		}
-	}
-	return mat;
+    }
+    return mat_out;
 }
 
 // Function to skip leading whitespace characters in a C-style string and return a pointer to the first non-whitespace character.
@@ -731,22 +742,23 @@ void clear_input_stream(FILE *stream) {
 // Returns:
 //   - A dynamically allocated char array (string) containing the read input.
 //   - If the end of file (EOF) is encountered before reading any characters, returns NULL.
-char* read_input(size_t *length, bool *filled) {
+char* read_input() {
 	// Define the buffer size for reading from stdin.
-	const size_t bufferSize = 8096;
+	const size_t buffer_size = 8096;
 
 	// Create a temporary buffer and a string to store the read input.
 	size_t temp_length = 0;
-	char* buffer = create_char_arr(bufferSize);
-	char* str = create_string(bufferSize + 1);
+	char* buffer = create_char_arr(buffer_size);
+	char* str = create_string(buffer_size);
 
-	// Initialize the filled flag to false by default.
-	*filled = false;
 
-	// Read a line of input (up to bufferSize characters) from stdin into the buffer.
-	if (fgets(buffer, bufferSize + 1, stdin) == NULL) {
+
+	// Read a line of input (up to buffer_size characters) from stdin into the buffer.
+	if (fgets(buffer, buffer_size, stdin) == NULL) {
+		clear_input_stream(stdin);
 		// If end of file (EOF) is encountered before reading any characters, return NULL.
 		free(buffer);
+		free(str);
 		return NULL;
 	}
 
@@ -758,20 +770,15 @@ char* read_input(size_t *length, bool *filled) {
 		temp_length++;
 	}
 
-	// If the length pointer is NULL (indicating no need to store the length), return NULL.
-	if (length == NULL) {
+	// If the length is 0 then nothing was copied 
+	if (temp_length == 0) {
 		free(buffer);
+		free(str);
 		return NULL;
 	}
 
 	// Copy the contents of the temporary buffer to the dynamically allocated string using memcpy.
-	memcpy(str, buffer, temp_length);
-	
-	// Set the filled flag to true, indicating that the input was successfully read.
-	*filled = true;
-
-	// Store the length of the read string in the provided length pointer.
-	*length = temp_length;
+	memcpy(str, buffer, buffer_size);
 
 	// Free the temporary buffer and return the dynamically allocated string.
 	free(buffer);
@@ -804,8 +811,8 @@ bool prompt_for_input() {
 // Returns:
 //   - True if at least one word was found, false otherwise.
 
-bool split_string_into_words(const char* str, char*** words, int* num_words) {
-    int word_count = 0;
+bool split_string_into_words(const char* str, char*** words, size_t* num_words) {
+    size_t word_count = 0;
 
     // Allocate memory to store the words array.
     *words = (char**)malloc(sizeof(char*));
@@ -847,6 +854,7 @@ bool split_string_into_words(const char* str, char*** words, int* num_words) {
     // Return true if at least one word was found, otherwise return false.
     return (word_count > 0);
 }
+
 // Function to parse a string and convert it into a dynamic array of doubles.
 // Parameters:
 //   - str: The input string to be parsed.
@@ -859,13 +867,12 @@ bool split_string_into_words(const char* str, char*** words, int* num_words) {
 bool parse_string(const char* str, double** arr, size_t* size) {
     char** words = NULL;
 
-    int num_words = 0;
+    size_t num_words = 0;
     bool has_words = split_string_into_words(str, &words, &num_words);
 
     if (!has_words) {
         return false;
     }
-
     // Allocate memory for the array of doubles and convert each word to a double.
     *arr = create_double_arr((size_t)num_words);
     for (int i = 0; i < num_words; i++) {
@@ -873,7 +880,7 @@ bool parse_string(const char* str, double** arr, size_t* size) {
     }
 
     // Update the number of elements in the array and free the memory used by the words array.
-    *size = (size_t)num_words;
+    *size = num_words;
     destroy_mat((void**)words, (size_t)num_words);
 
     return true;
@@ -928,6 +935,7 @@ double word_to_double(const char* str) {
 
     return num;
 }
+
 // Function to remove all occurrences of a character from a given string in place.
 // Parameters:
 //   - str: The input string from which the character will be removed.
@@ -1196,37 +1204,27 @@ void add_double_to_array(double **arr, size_t *size, size_t *capacity, double nu
 //   - cols: The number of columns in the matrix.
 void print_int_mat(const int **mat_in, const size_t rows, const size_t cols) {
     for (size_t i = 0; i < rows; i++) {
+		printf("[ ");
         for (size_t j = 0; j < cols; j++) {
-            if (j == 0) {
-                printf("[\t");
-            }
-            printf("%d\t", mat_in[i][j]);
-            if (j == cols - 1) {
-                printf("]\t");
-            }
+            printf("%d ", mat_in[i][j]);
         }
-        printf("\n");
+        printf(" ]\n");
     }
-    printf("\n");
 }
+
 // Function to print the contents of a 2D double matrix with a specified precision.
 // Parameters:
 //   - mat_in: Pointer to the 2D double matrix.
 //   - rows: The number of rows in the matrix.
 //   - cols: The number of columns in the matrix.
 //   - prec: The precision to use when printing the double values.
-void print_double_mat(const double **mat_in, const size_t rows, const size_t cols, const int prec) {
+void print_double_mat(double **mat_in, const size_t rows, const size_t cols, const int prec) {
     for (size_t i = 0; i < rows; i++) {
+		printf("[ ");
         for (size_t j = 0; j < cols; j++) {
-            if (j == 0) {
-                printf("[\t");
-            }
-            printf("%.*f\t", prec, mat_in[i][j]);
-            if (j == cols - 1) {
-                printf("]\t");
-            }
+            printf("%.*f ", prec, mat_in[i][j]);
         }
-        printf("\n");
+		printf("]\n");
     }
     printf("\n");
 }
@@ -1274,7 +1272,47 @@ int gcd(int num1, int num2) {
 //   - num: The number to check.
 // Returns:
 //   - True if the number is a perfect square, otherwise false.
-bool is_perfect_square(size_t num) {
-    size_t root = (size_t)sqrt(num);
-    return root * root == num;
+bool is_perfect_square(int n) {
+
+    // if (n < 0) // Check if the number is negative.
+    //     return 0; // Negative numbers are not perfect squares.
+
+    // if (n == 0 || n == 1)
+    //     return 1; // 0 and 1 are considered perfect squares.
+
+    // int x = n / 2; // Initialize x to half of the input number.
+
+    // while (x * x > n) { // Loop until x^2 is greater than the number.
+    //     x = (x + n / x) / 2; // Newton's method to find the square root approximation.
+    // }
+
+    return (get_int_square_root(n)*get_int_square_root(n) == n); // Check if the approximation is the exact square root.
 }
+
+// Function to calculate the integer square root of a given number.
+// The integer square root is the largest integer whose square is less than or equal to the given number.
+// If the input number is negative, the function returns -1 as the square root of a negative number is not defined.
+// Parameters:
+//   - n: The number for which to calculate the integer square root.
+// Returns:
+//   - The integer square root of the input number or -1 if the number is negative.
+int get_int_square_root(int n) {
+    if (n < 0) {
+        return -1; // Отрицательные числа не имеют целочисленного квадратного корня.
+    }
+
+    if (n == 0 || n == 1) {
+        return n; // Возвращаем 0 или 1, так как они являются своими квадратными корнями.
+    }
+
+    int x = n / 2; // Инициализируем x половиной исходного числа.
+
+    while (x * x > n) { // Пока x^2 больше исходного числа.
+        x = (x + n / x) / 2; // Метод сокращенного возведения в степень для приближенного квадратного корня.
+    }
+
+    // Проверяем разницу между квадратом x и исходным числом.
+    // Если разница меньше или равна 1, возвращаем x, иначе возвращаем x + 1.
+    return (x * x >= n) ? x : x+1;
+}
+
