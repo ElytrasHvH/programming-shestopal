@@ -11,10 +11,15 @@
 #include <limits.h>
 #include <math.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char *dst, const char *src, size_t size);
+#endif
 
 /**
  * Створює двовимірний масив цілих чисел.
@@ -160,7 +165,7 @@ bool adj_reverse_mat(double **mat_in, double **mat_out, size_t size);
  * @note Функція виконує LU-розклад вхідної матриці `mat` з частковим вибором головного елемента.
  *       Результати зберігаються у вихідній матриці `LU` та масиві `pivot`.
  */
-void lu_decomposition(double** mat, size_t size, double** lu_matrix, int* pivot);
+void lu_decomposition(double** mat, size_t size, double** lu_matrix,int* pivot);
 
 /**
  * Функція для обчислення визначника з LU-розкладу.
@@ -175,7 +180,7 @@ void lu_decomposition(double** mat, size_t size, double** lu_matrix, int* pivot)
  *       Також, вона коригує знак визначника на підставі кількості перестановок рядків,
  *       які відбулися під час LU-розкладу.
  */
-double determinant_from_lu(double** lu_matrix, size_t size, int* pivot);
+double determinant_from_lu(double** lu_matrix, size_t size,const int* pivot);
 
 /**
  * Функція для отримання визначника матриці.

@@ -16,6 +16,27 @@
 #define random() rand()
 #define srandom(seed) srand(seed)
 #endif
+
+#ifndef HAVE_STRLCPY
+// Implement the strlcpy function only if it's not already defined.
+size_t strlcpy(char *dst, const char *src, size_t size) {
+    size_t src_len = 0;
+    while (src[src_len] != '\0' && src_len + 1 < size) {
+        dst[src_len] = src[src_len];
+        src_len++;
+    }
+
+    if (size > 0) {
+        dst[src_len] = '\0';
+    }
+
+    while (src[src_len] != '\0') {
+        src_len++;
+    }
+
+    return src_len;
+}
+#endif
 // Function to create a 2D integer matrix of given size
 // with an option to randomize the values within a given range.
 // Parameters:
@@ -500,7 +521,7 @@ bool adj_reverse_mat(double **mat_in, double **mat_out, size_t size) {
 // and performs LU decomposition with partial pivoting. LU decomposition
 // represents the matrix as the product of a lower triangular matrix (L)
 // and an upper triangular matrix (U). It also keeps track of row swaps using `pivot` array.
-void lu_decomposition(double** mat, size_t size, double** lu_matrix, int* pivot) {
+void lu_decomposition(double** mat, size_t size, double** lu_matrix,int* pivot) {
     // Initialize LU matrix with the input matrix (copying data)
     for (size_t i = 0; i < size; i++) {
         for (size_t j = 0; j < size; j++) {
@@ -509,8 +530,8 @@ void lu_decomposition(double** mat, size_t size, double** lu_matrix, int* pivot)
     }
 
     // Initialize pivot array
-    for (int i = 0; i < size; i++) {
-        pivot[i] = i;
+    for (size_t i = 0; i < size; i++) {
+        pivot[i] = (int)i;
     }
 
     // Perform LU decomposition
@@ -553,7 +574,7 @@ void lu_decomposition(double** mat, size_t size, double** lu_matrix, int* pivot)
 // its `size` (number of rows/columns), and `pivot` array to adjust the sign of the determinant
 // based on the number of row swaps performed during LU decomposition.
 // The determinant is computed as the product of diagonal elements of LU matrix.
-double determinant_from_lu(double** lu_matrix, size_t size, int* pivot)  {
+double determinant_from_lu(double** lu_matrix, size_t size,const int* pivot)  {
     double det = 1.0;
     for (size_t i = 0; i < size; i++) {
         det *= lu_matrix[i][i];
@@ -562,7 +583,7 @@ double determinant_from_lu(double** lu_matrix, size_t size, int* pivot)  {
     // Adjust the sign of the determinant based on the number of row swaps
     int sign = 1;
     for (size_t i = 0; i < size; i++) {
-        if (i != pivot[i]) {
+        if ((const int)i != pivot[i]) {
             sign *= -1;
         }
     }
@@ -589,13 +610,13 @@ double get_determinant(double** mat, size_t size) {
 
     // Create LU matrix and pivot array for LU decomposition
     double **lu_matrix = create_double_mat(size, false, 0, 0);
-    int *pivot = malloc(size * sizeof(int));
+    int *pivot = create_int_arr(size);
 
     // Perform LU decomposition
     lu_decomposition(mat, size, lu_matrix, pivot);
 
     // Compute determinant from LU decomposition
-    double det = determinant_from_lu(lu_matrix, size, pivot);
+    double det = determinant_from_lu(lu_matrix, size, (const int*)pivot);
 
     // Free allocated memory
     destroy_mat((void**)mat_clone, size);
@@ -697,7 +718,7 @@ void swap_rows(void **mat, size_t row1, size_t row2) {
 }
 
 double **convert_array_to_mat(const double *arr, size_t count, size_t *size) {
-    (*size) = get_int_square_root((int)count);
+    (*size) = (size_t)get_int_square_root((int)count);
 	double** mat_out = create_double_mat(*size,0,0,0);
     for (size_t i = 0; i < *size; i++) {
 		for(size_t j = 0; j < *size; j++){
@@ -726,10 +747,10 @@ const char* skip_whitespace(const char* str) {
 // Parameters:
 //   - stream: A pointer to the input stream to be cleared (e.g., stdin).
 void clear_input_stream(FILE *stream) {
-    int c;
+    int clear;
     // Loop through the input stream until a newline character or EOF is encountered.
     // This effectively clears the input buffer up to the next line or end of file.
-    while ((c = fgetc(stream)) != '\n' && c != EOF) {
+    while ((clear = fgetc(stream)) != '\n' && clear != EOF) {
         // Do nothing; the loop discards the characters read from the input stream.
     }
 }
@@ -792,7 +813,7 @@ char* read_input() {
 //   - false for any other character, including EOF.
 bool prompt_for_input() {
     // Read a single character from stdin.
-    char chr = fgetc(stdin);
+    char chr = (char)fgetc(stdin);
 
     // Clear the input buffer up to the next newline character or EOF.
     clear_input_stream(stdin);
@@ -819,7 +840,7 @@ bool split_string_into_words(const char* str, char*** words, size_t* num_words) 
 
     // Create a mutable copy of the input string.
     char* mutable_str = create_string(strlen(str));
-    strcpy(mutable_str, str);
+    strlcpy(mutable_str, str, sizeof(mutable_str));
 
     // Tokenize the mutable string based on whitespace characters.
     char* token = strtok(mutable_str, " \n\t");
@@ -828,11 +849,11 @@ bool split_string_into_words(const char* str, char*** words, size_t* num_words) 
     while (token != NULL) {
         // Create a temporary string to hold the token.
         char* temp_token = create_string(strlen(token));
-        strcpy(temp_token, token);
+        strlcpy(temp_token, token, sizeof(temp_token));
 
         // Allocate memory for the word and store it in the words array.
-        (*words)[word_count] = (char*)malloc(strlen(temp_token) + 1);
-        strcpy((*words)[word_count], temp_token);
+        (*words)[word_count] = create_string(strlen(temp_token));
+        strlcpy((*words)[word_count], temp_token, strlen(temp_token));
         word_count++;
 
         // Reallocate memory for the words array to accommodate the next word.
@@ -845,11 +866,11 @@ bool split_string_into_words(const char* str, char*** words, size_t* num_words) 
         free(temp_token);
     }
 
-    // Update the number of words found.
-    *num_words = word_count;
-
     // Free the temporary mutable string.
     free(mutable_str);
+
+    // Update the number of words found.
+    *num_words = word_count;
 
     // Return true if at least one word was found, otherwise return false.
     return (word_count > 0);
@@ -871,11 +892,12 @@ bool parse_string(const char* str, double** arr, size_t* size) {
     bool has_words = split_string_into_words(str, &words, &num_words);
 
     if (!has_words) {
+	free(words);
         return false;
     }
     // Allocate memory for the array of doubles and convert each word to a double.
-    *arr = create_double_arr((size_t)num_words);
-    for (int i = 0; i < num_words; i++) {
+    *arr = create_double_arr(num_words);
+    for (size_t i = 0; i < num_words; i++) {
         (*arr)[i] = word_to_double(words[i]);
     }
 
@@ -975,7 +997,7 @@ void cut_string_right(char** str, char chr) {
     char* char_pos = strrchr(*str, chr);
     if (char_pos != NULL) {
         // Calculate the index of the character found in the string.
-        size_t end_index = char_pos - *str;
+        size_t end_index = (size_t)char_pos - (size_t)*str;
 
         // Null-terminate the string at the found character position to cut it on the right side.
         (*str)[end_index] = '\0';
@@ -1001,7 +1023,7 @@ void cut_string_left(char** str, char chr) {
     char* char_pos = strchr(*str, chr);
     if (char_pos != NULL) {
         // Calculate the index of the character found in the string.
-        size_t start_index = char_pos - *str;
+        size_t start_index = (size_t)char_pos - (size_t)*str;
 
         // Create a new string by duplicating the modified part of the original string.
         char* new_str = strdup(&(*str)[start_index]);
@@ -1052,11 +1074,11 @@ void compress_string(char* str) {
 //   - str: The input string that will be modified.
 //   - chr: The character to be preserved in the string.
 void remove_all_chars_except_first(char* str, char chr) {
-    int length = strlen(str);
+    size_t length = strlen(str);
     bool first_found = false;
 
     // Iterate over each character in the string.
-    for (int i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++) {
         // If the character 'chr' is found.
         if (str[i] == chr) {
             // If the first occurrence of the character has been found.
@@ -1078,7 +1100,7 @@ void convert_to_lowercase(char* str) {
     // Iterate over each character in the string.
     while (*str != '\0') {
         // Convert the current character to lowercase using the tolower function.
-        *str = tolower(*str);
+        *str = (char)tolower(*str);
         str++;
     }
 }
@@ -1305,14 +1327,14 @@ int get_int_square_root(int n) {
         return n; // Возвращаем 0 или 1, так как они являются своими квадратными корнями.
     }
 
-    int x = n / 2; // Инициализируем x половиной исходного числа.
+    int sqnum = n / 2; // Инициализируем x половиной исходного числа.
 
-    while (x * x > n) { // Пока x^2 больше исходного числа.
-        x = (x + n / x) / 2; // Метод сокращенного возведения в степень для приближенного квадратного корня.
+    while (sqnum * sqnum > n) { // Пока x^2 больше исходного числа.
+        sqnum = (sqnum + n / sqnum) / 2; // Метод сокращенного возведения в степень для приближенного квадратного корня.
     }
 
     // Проверяем разницу между квадратом x и исходным числом.
     // Если разница меньше или равна 1, возвращаем x, иначе возвращаем x + 1.
-    return (x * x >= n) ? x : x+1;
+    return (sqnum * sqnum >= n) ? sqnum : sqnum+1;
 }
 
