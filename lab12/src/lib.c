@@ -17,26 +17,6 @@
 #define srandom(seed) srand(seed)
 #endif
 
-#ifndef HAVE_STRLCPY
-// Implement the strlcpy function only if it's not already defined.
-size_t strlcpy(char *dst, const char *src, size_t size) {
-    size_t src_len = 0;
-    while (src[src_len] != '\0' && src_len + 1 < size) {
-        dst[src_len] = src[src_len];
-        src_len++;
-    }
-
-    if (size > 0) {
-        dst[src_len] = '\0';
-    }
-
-    while (src[src_len] != '\0') {
-        src_len++;
-    }
-
-    return src_len;
-}
-#endif
 // Function to create a 2D integer matrix of given size
 // with an option to randomize the values within a given range.
 // Parameters:
@@ -765,7 +745,7 @@ void clear_input_stream(FILE *stream) {
 //   - If the end of file (EOF) is encountered before reading any characters, returns NULL.
 char* read_input() {
 	// Define the buffer size for reading from stdin.
-	const size_t buffer_size = 8096;
+	const size_t buffer_size = 8192;
 
 	// Create a temporary buffer and a string to store the read input.
 	size_t temp_length = 0;
@@ -840,7 +820,7 @@ bool split_string_into_words(const char* str, char*** words, size_t* num_words) 
 
     // Create a mutable copy of the input string.
     char* mutable_str = create_string(strlen(str));
-    strlcpy(mutable_str, str, sizeof(mutable_str));
+    strcpy(mutable_str, str);
 
     // Tokenize the mutable string based on whitespace characters.
     char* token = strtok(mutable_str, " \n\t");
@@ -849,11 +829,11 @@ bool split_string_into_words(const char* str, char*** words, size_t* num_words) 
     while (token != NULL) {
         // Create a temporary string to hold the token.
         char* temp_token = create_string(strlen(token));
-        strlcpy(temp_token, token, sizeof(temp_token));
+        strcpy(temp_token, token);
 
         // Allocate memory for the word and store it in the words array.
         (*words)[word_count] = create_string(strlen(temp_token));
-        strlcpy((*words)[word_count], temp_token, strlen(temp_token));
+        strcpy((*words)[word_count], temp_token);
         word_count++;
 
         // Reallocate memory for the words array to accommodate the next word.
@@ -890,7 +870,6 @@ bool parse_string(const char* str, double** arr, size_t* size) {
 
     size_t num_words = 0;
     bool has_words = split_string_into_words(str, &words, &num_words);
-
     if (!has_words) {
 	free(words);
         return false;
@@ -899,8 +878,8 @@ bool parse_string(const char* str, double** arr, size_t* size) {
     *arr = create_double_arr(num_words);
     for (size_t i = 0; i < num_words; i++) {
         (*arr)[i] = word_to_double(words[i]);
+	printf("%f\n",(*arr)[i]);	
     }
-
     // Update the number of elements in the array and free the memory used by the words array.
     *size = num_words;
     destroy_mat((void**)words, (size_t)num_words);
@@ -919,13 +898,13 @@ double word_to_double(const char* str) {
 
     // Calculate the length of the input string.
     size_t length = strlen(str);
-
+	printf("%s\n",str);
     // Create a sanitized copy of the input string.
     char* sanitized_str = filter_string(str);
     if (sanitized_str == NULL) {
         return num;
     }
-
+	printf("%s\n",sanitized_str);
     // Calculate the length of the sanitized string.
     length = strlen(sanitized_str);
 
@@ -997,7 +976,7 @@ void cut_string_right(char** str, char chr) {
     char* char_pos = strrchr(*str, chr);
     if (char_pos != NULL) {
         // Calculate the index of the character found in the string.
-        size_t end_index = (size_t)char_pos - (size_t)*str;
+        size_t end_index = (size_t)(char_pos - *str);
 
         // Null-terminate the string at the found character position to cut it on the right side.
         (*str)[end_index] = '\0';
@@ -1023,7 +1002,7 @@ void cut_string_left(char** str, char chr) {
     char* char_pos = strchr(*str, chr);
     if (char_pos != NULL) {
         // Calculate the index of the character found in the string.
-        size_t start_index = (size_t)char_pos - (size_t)*str;
+        size_t start_index = (size_t)(char_pos - *str);
 
         // Create a new string by duplicating the modified part of the original string.
         char* new_str = strdup(&(*str)[start_index]);

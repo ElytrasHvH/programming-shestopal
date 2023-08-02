@@ -17,9 +17,7 @@
 #include <string.h>
 #include <time.h>
 
-#ifndef HAVE_STRLCPY
-size_t strlcpy(char *dst, const char *src, size_t size);
-#endif
+
 
 /**
  * Створює двовимірний масив цілих чисел.
