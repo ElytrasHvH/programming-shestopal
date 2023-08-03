@@ -17,6 +17,7 @@
 #define srandom(seed) srand(seed)
 #endif
 
+#define BUFFER_SIZE 2
 // Function to create a 2D integer matrix of given size
 // with an option to randomize the values within a given range.
 // Parameters:
@@ -464,17 +465,20 @@ double *diagonal(double **mat_in, double *arr, int size) {
 //   - A boolean value indicating whether the computation was successful.
 //     If the determinant of the input matrix is close to zero, the function returns false.
 
-bool adj_reverse_mat(double **mat_in, double **mat_out, size_t size) {
-	// Compute the determinant of the input matrix.
+bool reverse_mat(double **mat_in, double **mat_out, size_t size) {
+
+    	// Compute the determinant of the input matrix.
 	double det = get_determinant(mat_in, size);
+    	// Define a threshold for treating very small determinants as zero.
+    	const double det_threshold = 1e-15;
 	
-	// Check if the determinant is close to zero.
-	if (fabs(det) < 1e-7) {
-		// If the determinant is zero, the inverse matrix does not exist (but since fp's sucks we can't use ==; rip all matrix who has determinant < 1e-9 or > -1e-9).
-		// Return false to indicate that the computation was not successful.
-		return false;
-	}
-	
+    	// Check if the absolute value of the determinant is below the threshold.
+    	if (fabs(det) < det_threshold) {
+        	// If the absolute value of the determinant is below the threshold,
+        	// treat it as zero and return false to indicate that the inverse matrix
+        	// does not exist.
+        	return false;
+    	}
 	// Create a temporary matrix to store the adjugate matrix.
 	double **adj = create_double_mat(size, false, 0, 0);
 	
@@ -485,7 +489,7 @@ bool adj_reverse_mat(double **mat_in, double **mat_out, size_t size) {
 	// Divide each element of the adjugate matrix by the determinant of the input matrix.
 	for (size_t i = 0; i < size; i++) {
 		for (size_t j = 0; j < size; j++) {
-			mat_out[i][j] = adj[i][j] / det;
+			mat_out[i][j] = adj[i][j]/det;
 		}
 	}
 
@@ -580,6 +584,12 @@ double determinant_from_lu(double** lu_matrix, size_t size,const int* pivot)  {
 // The LU decomposition is performed, and the determinant is computed using `determinant_from_lu`.
 // Finally, the temporary matrices are freed, and the determinant is returned.
 double get_determinant(double** mat, size_t size) {
+	if (size == 1) {
+	        return mat[0][0];
+    } 	
+	if (size == 2) {
+        return mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
+    }
     // Create a temporary matrix mat_clone for LU decomposition
     double **mat_clone = create_double_mat(size, false, 0, 0);
     for (size_t row = 0; row < size; row++) {
@@ -593,7 +603,7 @@ double get_determinant(double** mat, size_t size) {
     int *pivot = create_int_arr(size);
 
     // Perform LU decomposition
-    lu_decomposition(mat, size, lu_matrix, pivot);
+    lu_decomposition(mat_clone, size, lu_matrix, pivot);
 
     // Compute determinant from LU decomposition
     double det = determinant_from_lu(lu_matrix, size, (const int*)pivot);
@@ -647,6 +657,8 @@ void get_cofactor(double **mat, double **temp, size_t p_index, size_t q_index, s
         }
     }
 }
+
+
 // Function to compute the adjugate (adjoint) matrix of a square matrix.
 // The adjugate matrix is the transpose of the cofactor matrix of the input matrix.
 // Parameters:
@@ -671,7 +683,6 @@ void get_adj_matrix(double **mat, double **adj, size_t size) {
 		for (size_t j = 0; j < size; j++) {
 			// Compute the cofactor matrix of the element at position (i, j) and store it in the temporary matrix temp.
 			get_cofactor(mat, temp, i, j, size);
-			
 			// Determine the sign of the element in the adjugate matrix based on the position (i, j).
 			sign = ((i + j) % 2 == 0) ? 1 : -1;
 			
@@ -679,7 +690,6 @@ void get_adj_matrix(double **mat, double **adj, size_t size) {
 			adj[j][i] = sign * get_determinant(temp, size - 1);
 		}
 	}
-
 	// Free the memory allocated for the temporary matrix temp.
 	destroy_mat((void**)temp, size);
 }
@@ -758,11 +768,11 @@ char* read_input() {
 	    }
 		return str;
     
-    } else {
+    } 
         clear_input_stream(stdin);
         free(str);
         return NULL;
-    }
+    
 
 
 }
@@ -773,8 +783,7 @@ char* read_input() {
 //   - true if the user entered 'Y' or 'y'.
 //   - false for any other character, including EOF.
 bool prompt_for_input() {
-    const size_t buffer_size = 2;
-    char buffer[buffer_size];
+    char buffer[BUFFER_SIZE];
 
     // Read up to 1 character from stdin into the buffer.
     if (fscanf(stdin, "%1[^\n]", buffer) == 1) {
@@ -783,10 +792,10 @@ bool prompt_for_input() {
         // Check if the first character in the buffer is 'Y' or 'y', indicating a positive response (yes).
         // If true, return true; otherwise, return false for a negative response (no).
         return (buffer[0] == 'y' || buffer[0] == 'Y') ? true : false;
-    } else {
+    } 
         clear_input_stream(stdin);
         return false;
-    }
+    
 }
 
 
@@ -1189,11 +1198,11 @@ void add_double_to_array(double **arr, size_t *size, size_t *capacity, double nu
 //   - cols: The number of columns in the matrix.
 void print_int_mat(const int **mat_in, const size_t rows, const size_t cols) {
     for (size_t i = 0; i < rows; i++) {
-		printf("[ ");
+		printf("[\t");
         for (size_t j = 0; j < cols; j++) {
-            printf("%d ", mat_in[i][j]);
+            printf("%d\t", mat_in[i][j]);
         }
-        printf(" ]\n");
+        printf("]\n");
     }
 }
 
@@ -1204,14 +1213,28 @@ void print_int_mat(const int **mat_in, const size_t rows, const size_t cols) {
 //   - cols: The number of columns in the matrix.
 //   - prec: The precision to use when printing the double values.
 void print_double_mat(double **mat_in, const size_t rows, const size_t cols, const int prec) {
+    // Determine the maximum number of characters required to represent any element in each column
+    int *max_width = calloc(cols, sizeof(int));
     for (size_t i = 0; i < rows; i++) {
-		printf("[ ");
         for (size_t j = 0; j < cols; j++) {
-            printf("%.*f ", prec, mat_in[i][j]);
+            int width = snprintf(NULL, 0, "%.*f", prec, mat_in[i][j]);
+            if (width > max_width[j]) {
+                max_width[j] = width;
+            }
         }
-		printf("]\n");
+    }
+
+    // Print the matrix using the determined field width for each column
+    for (size_t i = 0; i < rows; i++) {
+        printf("[\t");
+        for (size_t j = 0; j < cols; j++) {
+            printf("%*.*f\t", max_width[j], prec, mat_in[i][j]);
+        }
+        printf("]\n");
     }
     printf("\n");
+
+    free(max_width);
 }
 
 // Function to calculate the greatest common divisor (GCD) of two integers using the Euclidean algorithm.

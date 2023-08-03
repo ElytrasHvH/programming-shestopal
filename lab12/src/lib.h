@@ -150,7 +150,7 @@ double *diagonal(double **mat_in, double *arr, int size);
  * @param size Розмір матриць (кількість рядків та стовпців).
  * @return true, якщо обернена матриця була успішно обчислена, або false в іншому випадку.
  */
-bool adj_reverse_mat(double **mat_in, double **mat_out, size_t size);
+bool reverse_mat(double **mat_in, double **mat_out, size_t size);
 
 /**
  * Функція для виконання LU-розкладу з частковим вибором головного елемента.
