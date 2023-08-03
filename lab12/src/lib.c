@@ -462,7 +462,7 @@ double *diagonal(double **mat_in, double *arr, int size) {
 //   - size: The size of the square matrix (number of rows and columns).
 // Returns:
 //   - A boolean value indicating whether the matrix inversion was successful (true) or if the matrix is singular (false).
-bool reverse_mat(double **mat_in, double **mat_out, size_t size) {
+bool inverse_mat(double **mat_in, double **mat_out, size_t size) {
     // Define a threshold for considering the determinant as zero (singular matrix).
     const double det_threshold = 1e-15;
 
@@ -483,30 +483,30 @@ bool reverse_mat(double **mat_in, double **mat_out, size_t size) {
     lu_decomposition(mat_in, size, lu_matrix, pivot);
 
     // Create temporary arrays to hold intermediate values during solving of the equation AX = I for X.
-    double *b = create_double_arr(size);
-    double *x = create_double_arr(size);
+    double *b_vec = create_double_arr(size);
+    double *x_vec = create_double_arr(size);
 
     // Solve the equation AX = I for X using forward and backward substitution.
-    for (size_t j = 0; j < size; j++) {
+    for (int j = 0; j < (int)size; j++) {
         // Set up the vector b with the j-th unit column vector.
-        for (size_t i = 0; i < size; i++) {
-            b[i] = (pivot[i] == j) ? 1.0 : 0.0;
+        for (int i = 0; i < (int)size; i++) {
+            b_vec[i] = (pivot[i] == j) ? 1.0 : 0.0;
         }
 
         // Perform forward and backward substitution to find the j-th column of the inverted matrix.
-        lu_solve(lu_matrix, size, b, x);
+        lu_solve(lu_matrix, size,(const double *)b_vec, x_vec);
 
         // Copy the result (j-th column of the inverted matrix) to the output matrix.
         for (size_t i = 0; i < size; i++) {
-            mat_out[i][j] = x[i];
+            mat_out[i][j] = x_vec[i];
         }
     }
 
     // Clean up allocated memory and return true indicating successful matrix inversion.
     destroy_mat((void **)lu_matrix, size);
     free(pivot);
-    free(b);
-    free(x);
+    free(b_vec);
+    free(x_vec);
     return true;
 }
 
@@ -712,7 +712,7 @@ void get_adj_matrix(double **mat, double **adj, size_t size) {
 //   - vec_b: A pointer to the right-hand side vector of the system (1D double array).
 //   - vec_x: A pointer to the solution vector of the system (1D double array).
 // The function directly modifies the 'vec_x' vector to store the solution.
-void lu_solve(double **lu_mat, size_t size, double *vec_b, double *vec_x) {
+void lu_solve(double **lu_mat, size_t size,const double *vec_b, double *vec_x) {
     // Forward substitution: Solve L * y = vec_b for y.
     for (size_t i = 0; i < size; i++) {
         vec_x[i] = vec_b[i];
@@ -722,8 +722,8 @@ void lu_solve(double **lu_mat, size_t size, double *vec_b, double *vec_x) {
     }
 
     // Backward substitution: Solve U * x = y for x.
-    for (int i = size - 1; i >= 0; i--) {
-        for (size_t j = i + 1; j < size; j++) {
+    for (int i = (int)size - 1; i >= 0; i--) {
+        for (int j = i + 1; j < (int)size; j++) {
             vec_x[i] -= lu_mat[i][j] * vec_x[j];
         }
         vec_x[i] /= lu_mat[i][i];

@@ -8,9 +8,6 @@ int main(void) {
  printf("\n\tАвтор: Шестопал Дмитро Олексійович КН922Б.\n\t\tЛабораторна №12.\n\tЗавдання: Визначити зворотню матрицю\n");
  srand((unsigned int)time(NULL));
 
- bool filled = false;
- bool exist_mat = false;
- bool exist_arr;
  size_t size_mat = 0;
  size_t size_arr = 0;
  printf("Give 1 line string of numbers to fill an array.\n");
@@ -46,7 +43,7 @@ int main(void) {
   printf("Your matrix:\n");
   print_double_mat(mat_in, size_mat, size_mat, prec);
 
-  if(adj_reverse_mat(mat_in, mat_out, size_mat)){
+  if(inverse_mat(mat_in, mat_out, size_mat)){
    printf("Inverse matrix:\n");
    print_double_mat(mat_out, size_mat, size_mat, prec);
   } else {

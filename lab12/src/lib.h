@@ -154,7 +154,7 @@ double *diagonal(double **mat_in, double *arr, int size);
  *       Обернена матриця зберігається у вихідній матриці `mat_out`.
  *       Функція повертає true, якщо обертання вдалося, і false, якщо матриця є невиродженою (неможливо обернути).
  */
-bool reverse_mat(double** mat_in, double** mat_out, size_t size);
+bool inverse_mat(double** mat_in, double** mat_out, size_t size);
 
 /**
  * Функція для виконання LU-розкладу з частковим вибором головного елемента.
@@ -179,7 +179,7 @@ void lu_decomposition(double** mat, size_t size, double** lu_matrix,int* pivot);
  *
  * @note Функція безпосередньо змінює вектор `vec_x`, щоб зберігати розв'язок.
  */
-void lu_solve(double** lu_mat, size_t size, double* vec_b, double* vec_x);
+void lu_solve(double** lu_mat, size_t size,const double* vec_b, double* vec_x);
 /**
  * Функція для обчислення визначника з LU-розкладу.
  * 
