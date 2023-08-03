@@ -455,50 +455,61 @@ double *diagonal(double **mat_in, double *arr, int size) {
 	return arr;
 }
 
-
-// Function to compute the adjugate (adjoint) matrix of a square matrix and store it in another matrix.
+// Function to perform matrix inversion using LU decomposition with partial pivoting.
 // Parameters:
 //   - mat_in: A pointer to the input square matrix (2D double array).
-//   - mat_out: A pointer to the output square matrix (2D double array) that stores the adjugate matrix.
-//   - size: The size of the square matrices (number of rows and columns).
+//   - mat_out: A pointer to the output matrix that stores the inverted matrix (2D double array).
+//   - size: The size of the square matrix (number of rows and columns).
 // Returns:
-//   - A boolean value indicating whether the computation was successful.
-//     If the determinant of the input matrix is close to zero, the function returns false.
-
+//   - A boolean value indicating whether the matrix inversion was successful (true) or if the matrix is singular (false).
 bool reverse_mat(double **mat_in, double **mat_out, size_t size) {
+    // Define a threshold for considering the determinant as zero (singular matrix).
+    const double det_threshold = 1e-15;
 
-    	// Compute the determinant of the input matrix.
-	double det = get_determinant(mat_in, size);
-    	// Define a threshold for treating very small determinants as zero.
-    	const double det_threshold = 1e-15;
-	
-    	// Check if the absolute value of the determinant is below the threshold.
-    	if (fabs(det) < det_threshold) {
-        	// If the absolute value of the determinant is below the threshold,
-        	// treat it as zero and return false to indicate that the inverse matrix
-        	// does not exist.
-        	return false;
-    	}
-	// Create a temporary matrix to store the adjugate matrix.
-	double **adj = create_double_mat(size, false, 0, 0);
-	
-	// Compute the adjugate matrix of the input matrix and store it in the temporary matrix adj.
-	get_adj_matrix(mat_in, adj, size);
+    // Calculate the determinant of the input matrix.
+    double determinant = get_determinant(mat_in, size);
 
-	// Perform scalar division to obtain the inverse matrix.
-	// Divide each element of the adjugate matrix by the determinant of the input matrix.
-	for (size_t i = 0; i < size; i++) {
-		for (size_t j = 0; j < size; j++) {
-			mat_out[i][j] = adj[i][j]/det;
-		}
-	}
+    // If the determinant is close to zero, the matrix is singular and cannot be inverted.
+    // Return false to indicate the failure of matrix inversion.
+    if (fabs(determinant) < det_threshold) {
+        return false;
+    }
 
-	// Free the memory allocated for the temporary matrix adj.
-	destroy_mat((void**)adj, size);
-	
-	// Return true to indicate that the computation was successful and the inverse matrix is obtained.
-	return true;
+    // Create a new 2D double matrix and an integer array to hold the pivot information for LU decomposition.
+    double **lu_matrix = create_double_mat(size, false, 0, 0);
+    int *pivot = create_int_arr(size);
+
+    // Perform LU decomposition with pivoting on the input matrix.
+    lu_decomposition(mat_in, size, lu_matrix, pivot);
+
+    // Create temporary arrays to hold intermediate values during solving of the equation AX = I for X.
+    double *b = create_double_arr(size);
+    double *x = create_double_arr(size);
+
+    // Solve the equation AX = I for X using forward and backward substitution.
+    for (size_t j = 0; j < size; j++) {
+        // Set up the vector b with the j-th unit column vector.
+        for (size_t i = 0; i < size; i++) {
+            b[i] = (pivot[i] == j) ? 1.0 : 0.0;
+        }
+
+        // Perform forward and backward substitution to find the j-th column of the inverted matrix.
+        lu_solve(lu_matrix, size, b, x);
+
+        // Copy the result (j-th column of the inverted matrix) to the output matrix.
+        for (size_t i = 0; i < size; i++) {
+            mat_out[i][j] = x[i];
+        }
+    }
+
+    // Clean up allocated memory and return true indicating successful matrix inversion.
+    destroy_mat((void **)lu_matrix, size);
+    free(pivot);
+    free(b);
+    free(x);
+    return true;
 }
+
 
 // Function to perform LU decomposition with partial pivoting
 // This function takes the input matrix `mat`, its `size` (number of rows/columns),
@@ -693,6 +704,32 @@ void get_adj_matrix(double **mat, double **adj, size_t size) {
 	// Free the memory allocated for the temporary matrix temp.
 	destroy_mat((void**)temp, size);
 }
+
+// Function to solve a linear system of equations using LU decomposition.
+// Parameters:
+//   - lu_mat: A pointer to the LU decomposition of the coefficient matrix (2D double array).
+//   - size: The size of the matrix and vectors (number of rows and columns).
+//   - vec_b: A pointer to the right-hand side vector of the system (1D double array).
+//   - vec_x: A pointer to the solution vector of the system (1D double array).
+// The function directly modifies the 'vec_x' vector to store the solution.
+void lu_solve(double **lu_mat, size_t size, double *vec_b, double *vec_x) {
+    // Forward substitution: Solve L * y = vec_b for y.
+    for (size_t i = 0; i < size; i++) {
+        vec_x[i] = vec_b[i];
+        for (size_t j = 0; j < i; j++) {
+            vec_x[i] -= lu_mat[i][j] * vec_x[j];
+        }
+    }
+
+    // Backward substitution: Solve U * x = y for x.
+    for (int i = size - 1; i >= 0; i--) {
+        for (size_t j = i + 1; j < size; j++) {
+            vec_x[i] -= lu_mat[i][j] * vec_x[j];
+        }
+        vec_x[i] /= lu_mat[i][i];
+    }
+}
+
 // Function to swap two rows in a 2D matrix (array of pointers to rows).
 // Parameters:
 //   - mat: A pointer to the 2D matrix (array of pointers to rows).
