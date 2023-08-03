@@ -735,55 +735,36 @@ void clear_input_stream(FILE *stream) {
     }
 }
 
-// Function to read a line of input from stdin and store it in a dynamically allocated string.
-// The function reads characters until a newline character or the end of file (EOF) is encountered.
-// Parameters:
-//   - length: A pointer to a size_t variable to store the length of the read string (output parameter).
-//   - filled: A pointer to a boolean variable that indicates whether the input was successfully read (output parameter).
-// Returns:
-//   - A dynamically allocated char array (string) containing the read input.
-//   - If the end of file (EOF) is encountered before reading any characters, returns NULL.
+
 char* read_input() {
-	// Define the buffer size for reading from stdin.
+	
 	const size_t buffer_size = 8192;
 
-	// Create a temporary buffer and a string to store the read input.
+
 	size_t temp_length = 0;
-	char* buffer = create_char_arr(buffer_size);
 	char* str = create_string(buffer_size);
 
-
-
-	// Read a line of input (up to buffer_size characters) from stdin into the buffer.
-	if (fgets(buffer, buffer_size, stdin) == NULL) {
+	
+	if (fscanf(stdin,"%8191[^\n]", str) == 1) {
 		clear_input_stream(stdin);
-		// If end of file (EOF) is encountered before reading any characters, return NULL.
-		free(buffer);
-		free(str);
-		return NULL;
-	}
+	
+	    while (str[temp_length] != '\0' && str[temp_length] != '\n') {
+		    temp_length++;
+	    }
+    
+	    if (temp_length == 0) {
+		    free(str);
+		    return NULL;
+	    }
+		return str;
+    
+    } else {
+        clear_input_stream(stdin);
+        free(str);
+        return NULL;
+    }
 
-	// Clear any remaining characters in the input buffer up to the next newline character or EOF.
-	clear_input_stream(stdin);
 
-	// Calculate the length of the read string in the temporary buffer.
-	while (buffer[temp_length] != '\0' && buffer[temp_length] != '\n') {
-		temp_length++;
-	}
-
-	// If the length is 0 then nothing was copied 
-	if (temp_length == 0) {
-		free(buffer);
-		free(str);
-		return NULL;
-	}
-
-	// Copy the contents of the temporary buffer to the dynamically allocated string using memcpy.
-	memcpy(str, buffer, buffer_size);
-
-	// Free the temporary buffer and return the dynamically allocated string.
-	free(buffer);
-	return str;
 }
 
 // Function to prompt for a single character input (Y/y for yes and any other character for no) from stdin.
@@ -792,16 +773,22 @@ char* read_input() {
 //   - true if the user entered 'Y' or 'y'.
 //   - false for any other character, including EOF.
 bool prompt_for_input() {
-    // Read a single character from stdin.
-    char chr = (char)fgetc(stdin);
+    const size_t buffer_size = 2;
+    char buffer[buffer_size];
 
-    // Clear the input buffer up to the next newline character or EOF.
-    clear_input_stream(stdin);
+    // Read up to 1 character from stdin into the buffer.
+    if (fscanf(stdin, "%1[^\n]", buffer) == 1) {
+        clear_input_stream(stdin);
 
-    // Check if the character is 'Y' or 'y', indicating a positive response (yes).
-    // If true, return true; otherwise, return false for a negative response (no).
-    return (chr == 'y' || chr == 'Y') ? true : false;
+        // Check if the first character in the buffer is 'Y' or 'y', indicating a positive response (yes).
+        // If true, return true; otherwise, return false for a negative response (no).
+        return (buffer[0] == 'y' || buffer[0] == 'Y') ? true : false;
+    } else {
+        clear_input_stream(stdin);
+        return false;
+    }
 }
+
 
 // Function to split a given string into words based on whitespace characters (space, tab, newline).
 // Parameters:
@@ -877,8 +864,7 @@ bool parse_string(const char* str, double** arr, size_t* size) {
     // Allocate memory for the array of doubles and convert each word to a double.
     *arr = create_double_arr(num_words);
     for (size_t i = 0; i < num_words; i++) {
-        (*arr)[i] = word_to_double(words[i]);
-	printf("%f\n",(*arr)[i]);	
+        (*arr)[i] = word_to_double(words[i]);	
     }
     // Update the number of elements in the array and free the memory used by the words array.
     *size = num_words;
@@ -898,13 +884,11 @@ double word_to_double(const char* str) {
 
     // Calculate the length of the input string.
     size_t length = strlen(str);
-	printf("%s\n",str);
     // Create a sanitized copy of the input string.
     char* sanitized_str = filter_string(str);
     if (sanitized_str == NULL) {
         return num;
     }
-	printf("%s\n",sanitized_str);
     // Calculate the length of the sanitized string.
     length = strlen(sanitized_str);
 
