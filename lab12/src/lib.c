@@ -160,6 +160,9 @@ double *create_double_arr(size_t size) {
 //   - A pointer to the dynamically allocated character array.
 //   - Returns NULL if memory allocation fails.
 char *create_char_arr(size_t size) {
+	if(size<1) {
+		return NULL;
+	}
 	// Initialize a character pointer to NULL.
 	char* char_arr = NULL;
 
@@ -516,7 +519,7 @@ bool inverse_mat(double **mat_in, double **mat_out, size_t size) {
 // and performs LU decomposition with partial pivoting. LU decomposition
 // represents the matrix as the product of a lower triangular matrix (L)
 // and an upper triangular matrix (U). It also keeps track of row swaps using `pivot` array.
-void lu_decomposition(double** mat, size_t size, double** lu_matrix,int* pivot) {
+void lu_decomposition(double** mat, size_t size, double** lu_matrix, int* pivot) {
     // Initialize LU matrix with the input matrix (copying data)
     for (size_t i = 0; i < size; i++) {
         for (size_t j = 0; j < size; j++) {
@@ -541,11 +544,7 @@ void lu_decomposition(double** mat, size_t size, double** lu_matrix,int* pivot) 
 
         // Swap the rows to move the pivot element to the current row (i).
         if (max_index != i) {
-            for (size_t j = 0; j < size; j++) {
-                double temp = lu_matrix[i][j];
-                lu_matrix[i][j] = lu_matrix[max_index][j];
-                lu_matrix[max_index][j] = temp;
-            }
+            swap_rows((void**)lu_matrix, i, max_index); // Casting to void** for the generic swap_rows function.
 
             // Update the pivot array to keep track of row swaps.
             int temp_pivot = pivot[i];
@@ -562,7 +561,6 @@ void lu_decomposition(double** mat, size_t size, double** lu_matrix,int* pivot) 
         }
     }
 }
-
 
 // Function to compute the determinant from LU decomposition
 // This function takes the LU matrix obtained from `lu_decomposition`,
@@ -744,14 +742,35 @@ void swap_rows(void **mat, size_t row1, size_t row2) {
 	mat[row2] = temp;
 }
 
+// Function to convert a 1D array into a square matrix.
+// Parameters:
+//   - arr: A pointer to the input 1D array of double values.
+//   - count: The number of elements in the input array.
+//   - size: A pointer to a size_t variable that will store the size of the square matrix (number of rows and columns).
+// Returns:
+//   - A pointer to the dynamically allocated 2D matrix (square matrix) containing the values from the input array.
+//     The caller is responsible for freeing the allocated memory.
 double **convert_array_to_mat(const double *arr, size_t count, size_t *size) {
+    // Calculate the square root of the count and cast it to size_t to get the matrix size.
     (*size) = (size_t)get_int_square_root((int)count);
-	double** mat_out = create_double_mat(*size,0,0,0);
+
+    // Create a new square matrix with the calculated size.
+    // The create_double_mat function initializes the matrix elements to zero.
+    double **mat_out = create_double_mat(*size, 0, 0, 0);
+
+    // Fill the matrix with values from the input array in row-major order.
     for (size_t i = 0; i < *size; i++) {
-		for(size_t j = 0; j < *size; j++){
-			mat_out[i][j]=arr[(*size)*i+j];
-		}
+        for (size_t j = 0; j < *size; j++) {
+            // Calculate the index in the 1D array corresponding to the (i, j) element in the matrix.
+            // The elements are arranged in row-major order in the 1D array.
+            size_t index = (*size) * i + j;
+            // Assign the value from the input array to the matrix element.
+            // The matrix is square, so the number of columns is the same as the matrix size.
+            mat_out[i][j] = arr[index];
+        }
     }
+
+    // Return the dynamically allocated square matrix.
     return mat_out;
 }
 
@@ -773,7 +792,7 @@ const char* skip_whitespace(const char* str) {
 // This function is useful for clearing the input buffer after reading a value from stdin to avoid unwanted characters interfering with future input.
 // Parameters:
 //   - stream: A pointer to the input stream to be cleared (e.g., stdin).
-void clear_input_stream(FILE *stream) {
+void clear_input_line(FILE *stream) {
     int clear;
     // Loop through the input stream until a newline character or EOF is encountered.
     // This effectively clears the input buffer up to the next line or end of file.
@@ -783,36 +802,51 @@ void clear_input_stream(FILE *stream) {
 }
 
 
+// Function to read a line of input from the standard input (stdin).
+// The function dynamically allocates memory to store the input line as a C-style string.
+// The function uses a buffer size of 8192 characters to read the input line.
+// Returns:
+//   - A pointer to the dynamically allocated C-style string containing the input line.
+//     The caller is responsible for freeing the allocated memory.
+//   - If the input line is empty or an error occurs, the function returns NULL.
 char* read_input() {
-	
-	const size_t buffer_size = 8192;
+    // Define the buffer size for reading the input line.
+    const size_t buffer_size = 8192;
 
+    // Variable to store the length of the input line.
+    size_t temp_length = 0;
 
-	size_t temp_length = 0;
-	char* str = create_string(buffer_size);
+    // Create a new C-style string (character array) with the specified buffer size.
+    char* str = create_string(buffer_size);
 
-	
-	if (fscanf(stdin,"%8191[^\n]", str) == 1) {
-		clear_input_stream(stdin);
-	
-	    while (str[temp_length] != '\0' && str[temp_length] != '\n') {
-		    temp_length++;
-	    }
-    
-	    if (temp_length == 0) {
-		    free(str);
-		    return NULL;
-	    }
-		return str;
-    
+    // Read the input line from the standard input (stdin) using the specified buffer size.
+    // The function fscanf reads up to 8191 non-newline characters (limited by the buffer size)
+    // and stores them in the 'str' buffer until a newline or the end of the file is encountered.
+    if (fscanf(stdin, "%8191[^\n]", str) == 1) {
+        // If characters were successfully read, clear the remaining input stream until the newline character.
+        clear_input_line(stdin);
+
+        // Calculate the length of the input line (excluding the null terminator and newline character, if present).
+        while (str[temp_length] != '\0' && str[temp_length] != '\n') {
+            temp_length++;
+        }
+
+        // If the input line is empty (length is zero), free the memory and return NULL.
+        if (temp_length == 0) {
+            free(str);
+            return NULL;
+        }
+
+        // Return the dynamically allocated C-style string containing the input line.
+        return str;
+
     } 
-        clear_input_stream(stdin);
-        free(str);
-        return NULL;
-    
-
-
+    // If an error occurs during input or no characters were read, clear the input stream and free the memory.
+    clear_input_line(stdin);
+    free(str);
+    return NULL;
 }
+
 
 // Function to prompt for a single character input (Y/y for yes and any other character for no) from stdin.
 // This function reads a single character from stdin and clears the input buffer up to the next newline character or end of file (EOF).
@@ -824,13 +858,13 @@ bool prompt_for_input() {
 
     // Read up to 1 character from stdin into the buffer.
     if (fscanf(stdin, "%1[^\n]", buffer) == 1) {
-        clear_input_stream(stdin);
+        clear_input_line(stdin);
 
         // Check if the first character in the buffer is 'Y' or 'y', indicating a positive response (yes).
         // If true, return true; otherwise, return false for a negative response (no).
         return (buffer[0] == 'y' || buffer[0] == 'Y') ? true : false;
     } 
-        clear_input_stream(stdin);
+        clear_input_line(stdin);
         return false;
     
 }
@@ -1318,19 +1352,6 @@ int gcd(int num1, int num2) {
 // Returns:
 //   - True if the number is a perfect square, otherwise false.
 bool is_perfect_square(int n) {
-
-    // if (n < 0) // Check if the number is negative.
-    //     return 0; // Negative numbers are not perfect squares.
-
-    // if (n == 0 || n == 1)
-    //     return 1; // 0 and 1 are considered perfect squares.
-
-    // int x = n / 2; // Initialize x to half of the input number.
-
-    // while (x * x > n) { // Loop until x^2 is greater than the number.
-    //     x = (x + n / x) / 2; // Newton's method to find the square root approximation.
-    // }
-
     return (get_int_square_root(n)*get_int_square_root(n) == n); // Check if the approximation is the exact square root.
 }
 

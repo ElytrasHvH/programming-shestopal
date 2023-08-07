@@ -259,11 +259,11 @@ double** convert_array_to_mat(const double *arr, size_t count, size_t *size);
 const char* skip_whitespace(const char *str);
 
 /**
- * Очищує вхідний потік вводу (stdin).
+ * Очищує вхідний потік вводу.
  *
  * @param stream Вказівник на потік вводу.
  */
-void clear_input_stream(FILE *stream);
+void clear_input_line(FILE *stream);
 
 /**
  * Зчитує ввід користувача з консолі.

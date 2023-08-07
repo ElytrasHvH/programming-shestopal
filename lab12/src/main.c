@@ -58,6 +58,6 @@ int main(void) {
  destroy_mat((void**)mat_out, size_mat);
  destroy_arr((void*)arr);
  destroy_arr((void*)str);
-
+ 
  return 0;
 }
