@@ -467,7 +467,7 @@ double *diagonal(double **mat_in, double *arr, int size) {
 //   - A boolean value indicating whether the matrix inversion was successful (true) or if the matrix is singular (false).
 bool inverse_mat(double **mat_in, double **mat_out, size_t size) {
     // Define a threshold for considering the determinant as zero (singular matrix).
-    const double det_threshold = 1e-15;
+    const double det_threshold = 1e-7;
 
     // Calculate the determinant of the input matrix.
     double determinant = get_determinant(mat_in, size);
