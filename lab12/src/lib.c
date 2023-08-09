@@ -881,36 +881,36 @@ bool prompt_for_input() {
 
 bool split_string_into_words(const char* str, char*** words, size_t* num_words) {
     size_t word_count = 0;
+    const char* delimiter = " \n\t";
 
-    // Allocate memory to store the words array.
-    *words = (char**)malloc(sizeof(char*));
+    // Tokenize the input string to count the number of words.
+    char* mutable_str = strdup(str);
+    char* token = strtok(mutable_str, delimiter);
 
-    // Create a mutable copy of the input string.
-    char* mutable_str = create_string(strlen(str));
-    strcpy(mutable_str, str);
-
-    // Tokenize the mutable string based on whitespace characters.
-    char* token = strtok(mutable_str, " \n\t");
-
-    // Loop through each token and store them in the words array.
     while (token != NULL) {
-        // Create a temporary string to hold the token.
-        char* temp_token = create_string(strlen(token));
-        strcpy(temp_token, token);
-
-        // Allocate memory for the word and store it in the words array.
-        (*words)[word_count] = create_string(strlen(temp_token));
-        strcpy((*words)[word_count], temp_token);
         word_count++;
+        token = strtok(NULL, delimiter);
+    }
+    if(word_count==0){
+	free(mutable_str);
+	*num_words = 0;
+	return false; //no words were in the string
+    }    
+    // Allocate memory for the words array based on the actual count of words.
+    *words = (char**)malloc(word_count * sizeof(char*));
 
-        // Reallocate memory for the words array to accommodate the next word.
-        *words = (char**)realloc(*words, (word_count + 1) * sizeof(char*));
+    if (*words == NULL) {
+        free(mutable_str);
+        return false;  // Memory allocation failed.
+    }
 
-        // Continue tokenizing the string to find the next word.
-        token = strtok(NULL, " \n\t");
+    // Tokenize the input string again to populate the words array.
+    strcpy(mutable_str, str);
+    token = strtok(mutable_str, delimiter);
 
-        // Free the temporary token string.
-        free(temp_token);
+    for (size_t i = 0; i < word_count; i++) {
+        (*words)[i] = strdup(token);
+        token = strtok(NULL, delimiter);
     }
 
     // Free the temporary mutable string.
@@ -938,7 +938,9 @@ bool parse_string(const char* str, double** arr, size_t* size) {
     size_t num_words = 0;
     bool has_words = split_string_into_words(str, &words, &num_words);
     if (!has_words) {
-	free(words);
+	if(words!=NULL){
+		free(words);
+	}
         return false;
     }
     // Allocate memory for the array of doubles and convert each word to a double.
@@ -962,15 +964,13 @@ double word_to_double(const char* str) {
     double num = 0.0;
     char* endptr;
 
-    // Calculate the length of the input string.
-    size_t length = strlen(str);
     // Create a sanitized copy of the input string.
     char* sanitized_str = filter_string(str);
     if (sanitized_str == NULL) {
         return num;
     }
     // Calculate the length of the sanitized string.
-    length = strlen(sanitized_str);
+    size_t length = strlen(sanitized_str);
 
     // Create a temporary string to store the exponent part if present.
     char* temp_str = create_string(length);

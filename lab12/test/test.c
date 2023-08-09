@@ -839,18 +839,18 @@ Suite *lib_suite(void)
 	/* Core test case */
 	tc_core = tcase_create("Core");
 
-	tcase_add_test(tc_core, test_create_int_arr);
-	tcase_add_test(tc_core, test_create_double_arr);
-	tcase_add_test(tc_core, test_create_char_arr);
-	tcase_add_test(tc_core, test_create_string);
-	tcase_add_test(tc_core, test_increase_capacity);
+    tcase_add_test(tc_core, test_create_int_arr);
+    tcase_add_test(tc_core, test_create_double_arr);
+    tcase_add_test(tc_core, test_create_char_arr);
+    tcase_add_test(tc_core, test_create_string);
+    tcase_add_test(tc_core, test_increase_capacity);
     tcase_add_test(tc_core, test_generate_random_int_value);
     tcase_add_test(tc_core, test_generate_random_double_value);
-	tcase_add_test(tc_core, test_create_int_mat);
-	tcase_add_test(tc_core, test_create_double_mat);
-	tcase_add_test(tc_core, test_square_mat);
-	tcase_add_test(tc_core, test_bubble_sort);
-	tcase_add_test(tc_core, test_diagonal);
+    tcase_add_test(tc_core, test_create_int_mat);
+    tcase_add_test(tc_core, test_create_double_mat);
+    tcase_add_test(tc_core, test_square_mat);
+    tcase_add_test(tc_core, test_bubble_sort);
+    tcase_add_test(tc_core, test_diagonal);
     tcase_add_test(tc_core, test_lu_decomposition);
     tcase_add_test(tc_core, test_get_determinant);
     tcase_add_test(tc_core, test_get_cofactor);

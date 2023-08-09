@@ -34,9 +34,9 @@ check:
 
 doxy:
 	doxygen Doxyfile  
-
 leak-check: clean prep compile
-	valgrind $(V_FLAGS) --log-file=dist/valgrind.log --xml-file=dist/valgrind.xml --xml=yes cat ./assets/input.txt | ./dist/main.bin
+#--xml-file=dist/valgrind.xml --xml=yes
+	valgrind $(V_FLAGS) --log-file=dist/valgrind.log cat ./assets/input.txt | ./dist/main.bin
 leak-check-test: clean prep compile test
 	valgrind $(V_FLAGS) --log-file=dist/valgrind.log dist/test.bin
 #There is an unknown problem that causes xml files to be corrupted when using in on unit tests. This is why no xml transition for tests.
