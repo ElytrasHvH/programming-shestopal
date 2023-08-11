@@ -14,13 +14,13 @@ int main(void) {
         printf("No text found or an error occured. Aborting.\n");
         return 0;
     }
-    printf("Text:\n%s",text);
     for(int i = 0;text[i]!='\0';i++){
         if(isdigit(text[i])){
             num_digits++;
         }
     }
     printf("\nTotal digits found: %lu\n",num_digits);
+
     free(text);
     return 0;
 }

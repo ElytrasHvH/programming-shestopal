@@ -535,19 +535,18 @@ START_TEST(test_read_input_line) {
     dup2(fileno(tmp), STDIN_FILENO);
 
     // Read a line from stdin using read_input.
-    char *line = read_input();
+    char *line = read_input_line();
     ck_assert_str_eq(line, "Hello");
     free(line);
 
     // Read another line from stdin using read_input and verify that it has been cleared.
-    line = read_input();
+    line = read_input_line();
     ck_assert_str_eq(line, "World");
     free(line);
 
     // Read nother line and check if NULL was returned (string is empty or nothing else left).
-    line = read_input();
+    line = read_input_line();
     ck_assert_ptr_null(line);
-    free(line);
 
     // Close the temporary file.
     fclose(tmp);
@@ -646,12 +645,12 @@ START_TEST(test_cut_string_left)
 }
 END_TEST
 
-// Test case for contain_chars function
-START_TEST(test_contain_chars)
+// Test case for contains_char function
+START_TEST(test_contains_char)
 {
-    ck_assert(contain_chars("hello", 'h') == true);
-    ck_assert(contain_chars("hello", 'o') == true);
-    ck_assert(contain_chars("hello", 'x') == false);
+    ck_assert(contains_char("hello", 'h') == true);
+    ck_assert(contains_char("hello", 'o') == true);
+    ck_assert(contains_char("hello", 'x') == false);
 }
 END_TEST
 
@@ -838,12 +837,12 @@ START_TEST(test_filter_string)
 {
     // Test case 1: Basic filtering
     char* result = filter_string("Hello, World!", "Helo, Wrd");
-    ck_assert_str_eq(result, "Hello  World ");
+    ck_assert_str_eq(result, "Hello, World ");
     free(result);
 
     // Test case 2: Empty allowed_chars
     result = filter_string("Hello, World!", "");
-    ck_assert_str_eq(result, "            ");
+    ck_assert_str_eq(result, "             ");
     free(result);
 
     // Test case 3: All characters allowed
@@ -927,8 +926,7 @@ START_TEST(test_read_input_empty)
 
     // Read input from stdin using read_input.
     char* result = read_input();
-    ck_assert_str_eq(result, "");
-    free(result);
+    ck_assert_ptr_null(result);
 
     // Close the temporary file.
     fclose(tmp);
@@ -949,7 +947,7 @@ START_TEST(test_read_all_input_long)
 
     // Read all input from stdin using read_all_input.
     char* result = read_all_input();
-    ck_assert_int_eq(strlen(result), 8201);
+    ck_assert_uint_eq(strlen(result), 8201);
     for (int i = 0; i < 8200; i++) {
         ck_assert_int_eq(result[i], 'a');
     }
@@ -999,7 +997,7 @@ Suite *lib_suite(void)
     tcase_add_test(tc_core, test_is_negative);
     tcase_add_test(tc_core, test_cut_string_right);
     tcase_add_test(tc_core, test_cut_string_left);
-    tcase_add_test(tc_core, test_contain_chars);
+    tcase_add_test(tc_core, test_contains_char);
     tcase_add_test(tc_core, test_compress_string);
     tcase_add_test(tc_core, test_filter_number_string);
     tcase_add_test(tc_core, test_word_to_double);

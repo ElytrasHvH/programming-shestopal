@@ -873,21 +873,22 @@ char* read_input() {
     // Read the input from the standard input (stdin) using the specified buffer size.
     // The function fscanf reads up to 8192 characters (limited by the buffer size)
     // and stores them in the 'str' buffer until the end of the file is encountered.
-    if (fscanf(stdin, "%8192[^\0]", str) == 1) {
-        // Calculate the length of the input (excluding the null terminator).
-        while (str[length] != '\0') {
-            length++;
-        }
+	if (fscanf(stdin, "%8192c", str) > 0) {
 
-        // If the input is empty (length is zero), free the memory and return NULL.
-        if (length == 0) {
-            free(str);
-            return NULL;
-        }
+    	while (str[length] != '\0') {
+        	length++;
+    	}
 
-        // Return the dynamically allocated C-style string containing the input.
-        return str;
-    } 
+    	// If the input is empty (length is zero), free the memory and return NULL.
+    	if (length == 0) {
+        free(str);
+        	return NULL;
+    	}
+
+    	// Return the dynamically allocated C-style string containing the input.
+    	return str;
+	}
+
     // If an error occurs during input or no characters were read, free the memory.
     free(str);
     return NULL;
@@ -1261,7 +1262,7 @@ char* filter_string(const char* unfiltered_str, const char* allowed_chars) {
     size_t length = strlen(unfiltered_str);
     char* str = NULL;
     str = create_string(length);
-    if(str=NULL) {
+    if(str==NULL) {
         return NULL;
     }
     memcpy(str, unfiltered_str, length + 1);
