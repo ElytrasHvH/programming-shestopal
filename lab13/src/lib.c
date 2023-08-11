@@ -259,57 +259,62 @@ int generate_random_int_value(int limit, int shift) {
 	int rand_val;
 	int random_value;
 	
-	// If the limit is positive, generate a random value in the range [0, limit - 1].
-	if (limit > 0) {
-		rand_val = (int)random() % limit;
+	// Use a switch statement to check the value of the limit argument.
+	switch (limit) {
+		// If the limit is positive, generate a random value in the range [0, limit - 1].
+		case 1 ... INT_MAX:
+			rand_val = (int)random() % limit;
+			
+			// If the shift is positive and the generated value is close to INT_MAX, set the random value to INT_MAX.
+			if (shift > 0 && rand_val > INT_MAX - shift) {
+				random_value = INT_MAX; 
+			}
+			// If the shift is negative and the generated value is close to INT_MIN, set the random value to INT_MIN.
+			else if (shift < 0 && rand_val < INT_MIN - shift) {
+				random_value = INT_MIN; 
+			}
+			// Otherwise, apply the shift to the random value to get the final random value.
+			else {
+				random_value = rand_val + shift; 
+			}
+			break;
 		
-		// If the shift is positive and the generated value is close to INT_MAX, set the random value to INT_MAX.
-		if (shift > 0 && rand_val > INT_MAX - shift) {
-			random_value = INT_MAX; 
-		}
-		// If the shift is negative and the generated value is close to INT_MIN, set the random value to INT_MIN.
-		else if (shift < 0 && rand_val < INT_MIN - shift) {
-			random_value = INT_MIN; 
-		}
-		// Otherwise, apply the shift to the random value to get the final random value.
-		else {
-			random_value = rand_val + shift; 
-		}
-	}
-	// If the limit is negative, generate a random value in the range [limit + 1, 0].
-	else if (limit < 0) {
-		rand_val = -((int)random() % -limit);
+		// If the limit is negative, generate a random value in the range [limit + 1, 0].
+		case INT_MIN ... -1:
+			rand_val = -((int)random() % -limit);
+			
+			// If the shift is positive and the generated value is close to INT_MAX, set the random value to INT_MAX.
+			if (shift > 0 && rand_val > INT_MAX - shift) {
+				random_value = INT_MAX; 
+			}
+			// If the shift is negative and the generated value is close to INT_MIN, set the random value to INT_MIN.
+			else if (shift < 0 && rand_val < INT_MIN - shift) {
+				random_value = INT_MIN; 
+			}
+			// Otherwise, apply the shift to the random value to get the final random value.
+			else {
+				random_value = rand_val + shift; 
+			}
+			break;
 		
-		// If the shift is positive and the generated value is close to INT_MAX, set the random value to INT_MAX.
-		if (shift > 0 && rand_val > INT_MAX - shift) {
-			random_value = INT_MAX; 
-		}
-		// If the shift is negative and the generated value is close to INT_MIN, set the random value to INT_MIN.
-		else if (shift < 0 && rand_val < INT_MIN - shift) {
-			random_value = INT_MIN; 
-		}
-		// Otherwise, apply the shift to the random value to get the final random value.
-		else {
-			random_value = rand_val + shift; 
-		}
-	}
-	// If the limit is zero, generate a random value in the range [0, INT_MAX].
-	// In this case, the shift determines whether the value can be negative or positive.
-	else {
-		rand_val = (int)random();
+		// If none of the other cases match, generate a random value in the range [0, INT_MAX].
+		default:
+			rand_val = (int)random();
+			
+			// If the shift is positive and the generated value is close to INT_MAX, set the random value to INT_MAX.
+			if (shift > 0 && rand_val > INT_MAX - shift) {
+				random_value = INT_MAX; 
+			}
+			// If the shift is negative and the generated value is close to INT_MIN, set the random value to INT_MIN.
+			else if (shift < 0 && rand_val < INT_MIN - shift) {
+				random_value = INT_MIN; 
+			}
+			// Otherwise, apply the shift to the random value to get the final random value.
+			else {
+				random_value = rand_val + shift; 
+			}
+			break;
 		
-		// If the shift is positive and the generated value is close to INT_MAX, set the random value to INT_MAX.
-		if (shift > 0 && rand_val > INT_MAX - shift) {
-			random_value = INT_MAX; 
-		}
-		// If the shift is negative and the generated value is close to INT_MIN, set the random value to INT_MIN.
-		else if (shift < 0 && rand_val < INT_MIN - shift) {
-			random_value = INT_MIN; 
-		}
-		// Otherwise, apply the shift to the random value to get the final random value.
-		else {
-			random_value = rand_val + shift; 
-		}
 	}
 	
 	// Return the final random value.
@@ -323,78 +328,50 @@ int generate_random_int_value(int limit, int shift) {
 //   - A random double precision floating-point value within the specified range and shift.
 
 double generate_random_double_value(double limit, double shift) {
-	
-	// Declare variables to store the intermediate and final random values.
-	double rand_val;
-	double random_value;
-	
-	// If the limit is positive, generate a random value in the range [0, limit].
-	if (limit > 0) {
-		// Generate a random double precision floating-point value in the range [0, 1].
-		// The random() function generates random integer values in the range [0, RAND_MAX].
-		// To get a random value in the range [0, 1], divide by RAND_MAX.
-		// Scale the value by the specified limit to get the random value within the range [0, limit].
-		rand_val = (double)random() / RAND_MAX * limit;
-		
-		// If the shift is positive and the generated value is close to DBL_MAX, set the random value to DBL_MAX.
-		if (shift > 0 && rand_val > DBL_MAX - shift) {
-			random_value = DBL_MAX; 
-		}
-		// If the shift is negative and the generated value is close to DBL_MIN, set the random value to DBL_MIN.
-		else if (shift < 0 && rand_val < DBL_MIN - shift) {
-			random_value = DBL_MIN; 
-		}
-		// Otherwise, apply the shift to the random value to get the final random value.
-		else {
-			random_value = rand_val + shift; 
-		}
-	}
-	// If the limit is negative, generate a random value in the range [limit, 0].
-	else if (limit < 0) {
-		// Generate a random double precision floating-point value in the range [0, 1].
-		// The random() function generates random integer values in the range [0, RAND_MAX].
-		// To get a random value in the range [0, 1], divide by RAND_MAX.
-		// Scale the value by the absolute value of the specified limit to get the random value within the range [0, -limit].
-		rand_val = -((double)random() / RAND_MAX * -limit);
-		
-		// If the shift is positive and the generated value is close to DBL_MAX, set the random value to DBL_MAX.
-		if (shift > 0 && rand_val > DBL_MAX - shift) {
-			random_value = DBL_MAX; 
-		}
-		// If the shift is negative and the generated value is close to DBL_MIN, set the random value to DBL_MIN.
-		else if (shift < 0 && rand_val < DBL_MIN - shift) {
-			random_value = DBL_MIN; 
-		}
-		// Otherwise, apply the shift to the random value to get the final random value.
-		else {
-			random_value = rand_val + shift; 
-		}
-	}
-	// If the limit is zero, generate a random value in the range [0, 1].
-	// In this case, the shift determines whether the value can be negative or positive.
-	else {
-		// Generate a random double precision floating-point value in the range [0, 1].
-		// The random() function generates random integer values in the range [0, RAND_MAX].
-		// To get a random value in the range [0, 1], divide by RAND_MAX.
-		rand_val = (double)random() / RAND_MAX;
-		
-		// If the shift is positive and the generated value is close to DBL_MAX, set the random value to DBL_MAX.
-		if (shift > 0 && rand_val > DBL_MAX - shift) {
-			random_value = DBL_MAX; 
-		}
-		// If the shift is negative and the generated value is close to DBL_MIN, set the random value to DBL_MIN.
-		else if (shift < 0 && rand_val < DBL_MIN - shift) {
-			random_value = DBL_MIN; 
-		}
-		// Otherwise, apply the shift to the random value to get the final random value.
-		else {
-			random_value = rand_val + shift; 
-		}
-	}
-	
-	// Return the final random value.
-	return random_value;
+    // Declare variables to store the intermediate and final random values.
+    double rand_val;
+    double random_value;
+    
+    // Generate a random double precision floating-point value in the range [0, 1].
+    // The random() function generates random integer values in the range [0, RAND_MAX].
+    // To get a random value in the range [0, 1], divide by RAND_MAX.
+    rand_val = (double)random() / RAND_MAX;
+    
+    // Use switch cases to handle different values of limit.
+    switch ((limit > 0) - (limit < 0)) {
+        case 1:
+            // If the limit is positive, generate a random value in the range [0, limit].
+            // Scale the value by the specified limit to get the random value within the range [0, limit].
+            rand_val *= limit;
+            break;
+        case -1:
+            // If the limit is negative, generate a random value in the range [limit, 0].
+            // Scale the value by the absolute value of the specified limit to get the random value within the range [0, -limit].
+            rand_val *= -limit;
+            break;
+        default:
+            // If the limit is zero, generate a random value in the range [0, 1].
+            // In this case, the shift determines whether the value can be negative or positive.
+            break;
+    }
+    
+    // If the shift is positive and the generated value is close to DBL_MAX, set the random value to DBL_MAX.
+    if (shift > 0 && rand_val > DBL_MAX - shift) {
+        random_value = DBL_MAX; 
+    }
+    // If the shift is negative and the generated value is close to DBL_MIN, set the random value to DBL_MIN.
+    else if (shift < 0 && rand_val < DBL_MIN - shift) {
+        random_value = DBL_MIN; 
+    }
+    // Otherwise, apply the shift to the random value to get the final random value.
+    else {
+        random_value = rand_val + shift; 
+    }
+    
+    // Return the final random value.
+    return random_value;
 }
+
 // Function to perform bubble sort on an integer array in ascending order.
 // Parameters:
 //   - arr: A pointer to the integer array to be sorted.
