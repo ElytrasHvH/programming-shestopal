@@ -55,6 +55,7 @@ dkms.conf
 
 #Other
 
+*~
 git
 .vs/*
 lab09/.vs
