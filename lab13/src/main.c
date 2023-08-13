@@ -8,7 +8,7 @@ int main(void) {
     printf("\n\tАвтор: Шестопал Дмитро Олексійович КН922Б.\n\t\tЛабораторна №13. Строки (Null-terminated C Strings)\n\tЗавдання: Знайти всі цифри, які зустрічаються в тексті.\n");
     char* text=NULL;
     size_t num_digits=0;
-    printf("Print a text to count all digits in text:\n");
+    printf("Print a text to count all digits in text (Press ctrl+D to continue (linux) or ctrl+Z twice (windows)):\n");
     text=read_all_input();
     if(text==NULL) {
         printf("No text found or an error occured. Aborting.\n");

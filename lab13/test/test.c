@@ -258,7 +258,6 @@ START_TEST(test_diagonal)
 	free(arr_out);
 }
 END_TEST
-// Add all test cases to a test suite
 
 // Test case for the lu_decomposition function
 START_TEST(test_lu_decomposition)
@@ -587,6 +586,7 @@ START_TEST(test_split_string_into_words)
 	ck_assert(num_words == 2);
 	ck_assert_str_eq(words[0], "Hello");
 	ck_assert_str_eq(words[1], "world!");
+	destroy_mat((void**)words,num_words);
 	
 	result = split_string_into_words("", &words, &num_words);
 	ck_assert(result == false);

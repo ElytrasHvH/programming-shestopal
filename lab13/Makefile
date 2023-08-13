@@ -1,7 +1,8 @@
 CC = gcc
 C_OPTS = -std=gnu11 -g -Wall -Wextra -Werror -Wformat-security -Wfloat-equal -Wshadow -Wconversion -Wlogical-not-parentheses -Wnull-dereference -Wno-unused-variable -Werror=vla
 V_FLAGS=--tool=memcheck --leak-check=full --show-reachable=yes --undef-value-errors=yes --track-origins=no --child-silent-after-fork=no --trace-children=no --error-exitcode=1
-
+#-fsanitize=address -fsanitize=leak 
+#can't use them with leack-check-test for some reason
 .PHONY: clean prep compile check
 
 clean:
@@ -35,9 +36,8 @@ check:
 doxy:
 	doxygen Doxyfile  
 leak-check: clean prep compile
-#--xml-file=dist/valgrind.xml --xml=yes
-	valgrind $(V_FLAGS) --log-file=dist/valgrind.log cat ./assets/input.txt | ./dist/main.bin
+	valgrind $(V_FLAGS) --log-file=dist/valgrind.log cat ./assets/input.txt | ./dist/main.bin 
 leak-check-test: clean prep compile test
-	valgrind $(V_FLAGS) --log-file=dist/valgrind.log dist/test.bin
-#There is an unknown problem that causes xml files to be corrupted when using in on unit tests. This is why no xml transition for tests.
+	valgrind $(V_FLAGS) --log-file=dist/valgrind.log ./dist/test.bin
+#--xml=yes --xml-file=dist/valgrind.xml
 all: clean prep check compile test doxy
