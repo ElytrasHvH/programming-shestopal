@@ -976,8 +976,8 @@ START_TEST(test_check_files)
     // Test case 5: input_file is an invalid path (e.g., non-existent file)
     ck_assert_int_eq(check_files("non_existent.txt", "dist/output.txt"), -1);
     
-    // Test case 6: output_file is an invalid path (e.g., non-writable directory)
-    ck_assert_int_eq(check_files("assets/input.txt", "/test/output.txt"), -1);
+    // Test case 6: output_file is an invalid path (e.g., non-writable directory) //! Create read-only directory to test
+    ck_assert_int_eq(check_files("assets/input.txt", "dist/test/output.txt"), -1);
 }
 END_TEST
 
