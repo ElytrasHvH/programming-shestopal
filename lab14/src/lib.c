@@ -808,25 +808,25 @@ char* read_input() {
     // Read the input from the standard input (stdin) using the specified buffer size.
     // The function fscanf reads up to 8192 characters (limited by the buffer size)
     // and stores them in the 'str' buffer until the end of the file is encountered.
-	if (fscanf(stdin, "%8192c", str) > 0) {
-
-    	while (str[length] != '\0') {
-        	length++;
-    	}
-
-    	// If the input is empty (length is zero), free the memory and return NULL.
-    	if (length == 0) {
+    if (fscanf(stdin, "%8192c", str) <= 0) {
+        // If an error occurs during input or no characters were read, free the memory.
         free(str);
-        	return NULL;
-    	}
+        return NULL;
+    }
 
-    	// Return the dynamically allocated C-style string containing the input.
-    	return str;
-	}
+    // Count the length of the input.
+    while (str[length] != '\0') {
+        length++;
+    }
 
-    // If an error occurs during input or no characters were read, free the memory.
-    free(str);
-    return NULL;
+    // If the input is empty (length is zero), free the memory and return NULL.
+    if (length == 0) {
+        free(str);
+        return NULL;
+    }
+
+    // Return the dynamically allocated C-style string containing the input.
+    return str;
 }
 
 // Function to read whole input from the standard input (stdin).
@@ -843,7 +843,7 @@ char* read_all_input() {
     // Variable to store the length of the input.
     size_t length = 0;
 
-    // Create a new C-style string (character array) with the specified buffer size.
+    // Create a new C-style string (character array) with the specified buffer size. string size is (buffer_size + '\0')
     char* str = create_string(buffer_size);
 
     // Check if memory allocation was successful.
@@ -1454,7 +1454,7 @@ int get_int_square_root(int n) {
 //   - input_file: The path of the input file.
 //   - output_file: The path of the output file.
 // Returns:
-//   - 0 if both input and output file paths are valid, -1 otherwise.
+//   - 0 if input and/or output file paths are valid, -1 otherwise.
 int check_files(char* input_file, char* output_file) {
     if (output_file == NULL && input_file == NULL) {
         // Both input_file and output_file are NULL, return error
@@ -1481,11 +1481,9 @@ int check_files(char* input_file, char* output_file) {
             // Output file path ends with '/' or a whitespace character, handle error
             return -1;
         }
-        
         // Duplicate output_file to avoid modifying the original string
         char *output_file_dup = strdup(output_file);
         char *output_dir_path = dirname(output_file_dup);
-        
         if (directory_exists(output_dir_path) == 0) {
             MKDIR(output_dir_path);
             
@@ -1494,21 +1492,21 @@ int check_files(char* input_file, char* output_file) {
                 free(output_file_dup);
                 return -1;
             }
-        } else if (directory_exists(output_dir_path) == 1) {
+        } else if(directory_exists(output_dir_path) == -1) {
+            //dir_path is a null pointer (somehow)
+            free(output_file_dup);
+            return -1;
+        } else {
             // Directory exists, check if it's writable
             if (access(output_dir_path, W_OK) == -1) {
                 // Cannot write to the directory, handle error
                 free(output_file_dup);
                 return -1;
             }
-        } else if(directory_exists(output_dir_path) == -1) {
-            //dir_path is a null pointer (somehow)
-            free(output_file_dup);
-            return -1;
-        }
         
         // Free the duplicated output_file path
         free(output_file_dup);
+        }
     }
     
     return 0; // Both input and output file paths are valid
@@ -1540,7 +1538,7 @@ void read_from_file(char* input_file, char** result_string) {
 // Returns:
 //   - 1 if the directory exists, -1 if path is a NULL,0 otherwise
 int directory_exists(const char *path) {
-    if (path=NULL) {
+    if (path==NULL) {
         return -1;
     }
     struct stat stat_buffer;
@@ -1552,7 +1550,7 @@ int directory_exists(const char *path) {
 //   - output_file: The path of the output file to write to.
 //   - data: The data to be written to the file.
 void write_to_file(char* output_file, char* data) {
-    if (data=NULL) {
+    if (data==NULL) {
         return;
     }
     FILE *fp = fopen(output_file, "w"); // Open the output file for writing.

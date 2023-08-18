@@ -485,7 +485,7 @@ void write_to_file(char* output_file,char* data);
  * Функція що перевіряє наявність директорії
  *
  * @param path шлях до директорії
- * @return 0 якщо не існує 1 якщо існує
+ * @return 0 якщо не існує 1 якщо існує -1 якщо NULL строка
 */
 int directory_exists(const char *path);
 
