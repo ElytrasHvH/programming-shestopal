@@ -992,11 +992,11 @@ START_TEST(test_read_from_file)
     read_from_file("test_input.txt", NULL);
     
     // Test case 3: input_file is a valid file path
-    FILE *fp = fopen("test_input.txt", "w");
+    FILE *fp = fopen("test/test_input.txt", "w");
     fprintf(fp, "test content\n");
     fclose(fp);
     
-    read_from_file("test_input.txt", &result_string);
+    read_from_file("test/test_input.txt", &result_string);
     ck_assert_str_eq(result_string, "test content\n");
     
     free(result_string);
