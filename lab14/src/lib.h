@@ -500,4 +500,7 @@ int directory_exists(const char *path);
  * @return Строка яка має массив у відформатованному вигляді.
 */
 char*write_double_mat_to_string(double **mat_in, const size_t rows, const size_t cols, const int prec);
+
+void handle_args(int argc, char** argv,char** input_file,char** output_file,char** errstr,int* errcode);
+void handle_output(char* output_text,char* output_file,char* errstr,int errcode);
 #endif

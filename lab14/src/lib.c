@@ -20,7 +20,7 @@
 #define srandom(seed) srand(seed)
 #define MKDIR(path) _mkdir(path)
 #else
-#define MKDIR(path) mkdir(path, 0755,true)
+#define MKDIR(path) mkdir(path, 0755)
 #endif
 
 #define BUFFER_SIZE 2
@@ -1523,13 +1523,13 @@ void read_from_file(char* input_file, char** result_string) {
     }
     
     //Better to use in combination with check_files function
-    FILE *f = freopen(input_file, "r", stdin); // Open the input file for reading.
-    if (f == NULL) {
+    FILE *file = freopen(input_file, "r", stdin); // Open the input file for reading.
+    if (file == NULL) {
         return; // Return if file opening fails.
     }
     
     *result_string = read_all_input(); // Read all input from stdin and store in result_string.
-    fclose(f); // Close the input file.
+    (void)fclose(file); // Close the input file.
 }
 
 // Function to check if a directory exists at the given path.
@@ -1553,16 +1553,16 @@ void write_to_file(char* output_file, char* data) {
     if (data==NULL) {
         return;
     }
-    FILE *fp = fopen(output_file, "w"); // Open the output file for writing.
+    FILE *file = fopen(output_file, "w"); // Open the output file for writing.
     
-    if (fp == NULL) {
+    if (file == NULL) {
         // Handle error if file opening fails (e.g., permission issues).
         // Note: This function assumes that proper checks have been performed before calling it.
         return;
     }
     
-    fprintf(fp, "%s", data); // Write the data to the file.
-    fclose(fp); // Close the output file.
+    (void)fprintf(file, "%s", data); // Write the data to the file.
+    (void)fclose(file); // Close the output file.
 }
 
 
@@ -1599,25 +1599,88 @@ char* write_double_mat_to_string(double **mat_in, const size_t rows, const size_
     total_width += snprintf(NULL, 0, "\n");
 
     // Allocate memory for the formatted matrix string
-    char *mat_str = create_string(total_width); 
+    char *mat_str = create_string((size_t)total_width); 
     if (mat_str == NULL) {
         free(max_width);
         return NULL;
     }
 
     // Write the matrix using the determined field width for each column
-    char *p = mat_str;
+    char *ptr = mat_str;
     for (size_t i = 0; i < rows; i++) {
-        p += sprintf(p, "[\t");
+        ptr += sprintf(ptr, "[\t");
         for (size_t j = 0; j < cols; j++) {
-            p += sprintf(p, "%*.*f\t", max_width[j], prec, mat_in[i][j]);
+            ptr += sprintf(ptr, "%*.*f\t", max_width[j], prec, mat_in[i][j]);
         }
-        p += sprintf(p, "]\n");
+        ptr += sprintf(ptr, "]\n");
     }
-    p += sprintf(p, "\n");
+    ptr += sprintf(ptr, "\n");
 
     free(max_width);
     return mat_str;
 }
 
+void handle_args(int argc, char** argv,char** input_file,char** output_file,char** errstr,int* errcode) {
+    switch(argc) {
+        case 1:
+            printf("No input file provided\nGive a file location (1 line,less then or equal to 8192 characters):\n");
+            *input_file=read_input_line();
+            if(*input_file==NULL) {
+                destroy_arr((void*)*errstr);
+                *errstr=strdup("No input file provided or an error occured.\n");
+                *errcode = -1;
+                break;
+            }
+            printf("No output file destination & name provided\nDo you want to proceed with default location?(Y/N)\n");
+            if(!prompt_for_input()){
+                destroy_arr(*output_file);
+                printf("Give output file destination (1 line,less then or equal to 8192 characters):\n");
+                *output_file = read_input_line();
+                if(*output_file==NULL) {
+                    destroy_arr((void*)*errstr);
+                    *errstr=strdup("No destination provided or an error occured\n");
+                    *errcode = -1;
+                    break;
+                }
+            }
+        break;
+        case 2:
+            *input_file=strdup(argv[1]);
+            printf("No output file destination & name provided\nDo you want to proceed with default location?(Y/N)\n");
+            if(!prompt_for_input()){
+                destroy_arr(*output_file);
+                printf("Give output file destination (1 line,less then or equal to 8192 characters):\n");
+                *output_file = read_input_line();
+                if(*output_file==NULL) {
+                    destroy_arr((void*)*errstr);
+                    *errstr=strdup("No destination provided or an error occured\n");
+                    *errcode = -1;
+                    break;
+                }
+            }
+        break;
+        default:
+            destroy_arr(*output_file);
+            *input_file=strdup(argv[1]);
+            *output_file=strdup(argv[2]);
+        break;
+    }
+}
 
+void handle_output(char* output_text,char* output_file,char* errstr,int errcode) {
+	//! errcode 1,-1 reserved if there is a problem with the output file (nonexistant/not given/no write permission/etc...)
+    switch(errcode) {
+        case 0:
+            printf("%s", output_text);
+            write_to_file(output_file, output_text);
+            break;
+        case -1:
+        case 1:
+            printf("%s", errstr);
+            break;
+        default:
+            printf("%s", errstr);
+            write_to_file(output_file, errstr);
+            break;
+    }
+}
