@@ -1620,67 +1620,100 @@ char* write_double_mat_to_string(double **mat_in, const size_t rows, const size_
     return mat_str;
 }
 
-void handle_args(int argc, char** argv,char** input_file,char** output_file,char** errstr,int* errcode) {
-    switch(argc) {
+// Function to parse input file and output file location. Mainly designed for use with command line arguments, but can be used elsewhere
+// Parameters: 
+// - argc: the number of arguments (originally designed for command line arguments)
+// - argv: an array of strings containing the arguments
+// - input_file: a pointer to a string to hold the extracted input file path (not formatted or verified)
+// - output_file: a pointer to a string to hold the extracted output file path (not formatted or verified)
+// - errstr: a pointer to a string to store error messages
+// - errcode: a pointer to an integer to store error codes for caller's reference
+// * input_file must be initialized as NULL pointer , errstr and output_file can be dynamically allocated strings (e.g., strdup("string") or NULL pointers
+// * we only extract strings, we do NOT perform any assertions on them to check if it is a real path/file etc.
+// * errcode is set to -1 if an error occurs
+// ! The caller is responsible for freeing memory.
+void handle_args(int argc, char** argv, char** input_file, char** output_file, char** errstr, int* errcode) {
+    switch (argc) {
         case 1:
-            printf("No input file provided\nGive a file location (1 line,less then or equal to 8192 characters):\n");
-            *input_file=read_input_line();
-            if(*input_file==NULL) {
-                destroy_arr((void*)*errstr);
-                *errstr=strdup("No input file provided or an error occured.\n");
+            printf("No input file provided\nGive a file location (1 line, up to 8192 characters):\n");
+            *input_file = read_input_line(); // Read input file from user
+            if (*input_file == NULL) {
+                destroy_arr((void*)*errstr); // Free any previous error message
+                *errstr = strdup("No input file provided or an error occurred.\n");
                 *errcode = -1;
                 break;
             }
-            printf("No output file destination & name provided\nDo you want to proceed with default location?(Y/N)\n");
-            if(!prompt_for_input()){
-                destroy_arr(*output_file);
-                printf("Give output file destination (1 line,less then or equal to 8192 characters):\n");
-                *output_file = read_input_line();
-                if(*output_file==NULL) {
+            printf("No output file destination & name provided\nDo you want to proceed with the default location? (Y/N)\n");
+            if (!prompt_for_input()) {
+                destroy_arr(*output_file); // Free any previous output file path
+                printf("Give output file destination (1 line, up to 8192 characters):\n");
+                *output_file = read_input_line(); // Read output file path from user
+                if (*output_file == NULL) {
                     destroy_arr((void*)*errstr);
-                    *errstr=strdup("No destination provided or an error occured\n");
+                    *errstr = 
+                    strdup("No destination provided or an error occurred.\n");
                     *errcode = -1;
                     break;
                 }
             }
-        break;
+            break;
         case 2:
-            *input_file=strdup(argv[1]);
-            printf("No output file destination & name provided\nDo you want to proceed with default location?(Y/N)\n");
-            if(!prompt_for_input()){
+            *input_file = strdup(argv[1]); // Extract input file path from command line argument
+            printf("No output file destination & name provided\nDo you want to proceed with the default location? (Y/N)\n");
+            if (!prompt_for_input()) {
                 destroy_arr(*output_file);
-                printf("Give output file destination (1 line,less then or equal to 8192 characters):\n");
+                printf("Give output file destination (1 line, up to 8192 characters):\n");
                 *output_file = read_input_line();
-                if(*output_file==NULL) {
+                if (*output_file == NULL) {
                     destroy_arr((void*)*errstr);
-                    *errstr=strdup("No destination provided or an error occured\n");
+                    *errstr = strdup("No destination provided or an error occurred.\n");
                     *errcode = -1;
                     break;
                 }
             }
-        break;
+            break;
         default:
             destroy_arr(*output_file);
-            *input_file=strdup(argv[1]);
-            *output_file=strdup(argv[2]);
-        break;
+            *input_file = strdup(argv[1]); // Extract input file path from command line argument
+            *output_file = strdup(argv[2]); // Extract output file path from command line argument
+            break;
+    }
+
+    if ((*input_file == NULL) && (*output_file == NULL)) {
+        destroy_arr((void*)*errstr);
+        *errstr = strdup("No input and output file were provided.\n");
+        *errcode = -1;
+        return;
     }
 }
 
-void handle_output(char* output_text,char* output_file,char* errstr,int errcode) {
-	//! errcode 1,-1 reserved if there is a problem with the output file (nonexistant/not given/no write permission/etc...)
-    switch(errcode) {
+// Function to handle output based on error codes
+// Parameters:
+// - output_text: the text to be outputted or written to the file
+// - output_file: the file path to write the output text (assumed to have write permission)
+// - errstr: the error message text
+// - errcode: the error code
+// * Error codes 1 and -1 reserved for problems with the output file (nonexistent, not given, etc.)
+// * Error codes other than 1 and -1 are considered general errors.
+// * Assumes that write permission to the output file is already granted.
+void handle_output(char* output_text, char* output_file, char* errstr, int errcode) {
+    // errcode 1, -1 reserved for problems with the output file (nonexistent, not given, no write permission, etc.)
+    switch (errcode) {
         case 0:
-            printf("%s", output_text);
-            write_to_file(output_file, output_text);
-            break;
+            printf("%s", output_text); // Print output text to console
+            write_to_file(output_file, output_text); // Write output text to the specified file
+        break;
+
         case -1:
         case 1:
-            printf("%s", errstr);
-            break;
+            printf("%s", errstr); // Print error message to console
+        break;
+
         default:
-            printf("%s", errstr);
-            write_to_file(output_file, errstr);
-            break;
+            printf("%s", errstr); // Print error message to console
+            write_to_file(output_file, errstr); // Write error message to the specified file
+        break;
+
     }
 }
+

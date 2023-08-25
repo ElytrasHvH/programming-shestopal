@@ -10,7 +10,6 @@
 
 
 int main(int argc, char** argv) {
-
 printf("\n\tАвтор: Шестопал Дмитро Олексійович КН922Б.\n\t\tЛабораторна №14 Взаємодія з файлами\n\tЗавдання: Визначити детермінант матриці якщо він існує.\n");
 
 char* input_file = NULL;
@@ -49,7 +48,7 @@ if(check_files(NULL,output_file)!=0) {
 
 read_from_file(input_file,&text);
 
-if(text==NULL){
+if(text==NULL) {
     destroy_arr((void*)errstr);
     errstr=strdup("Error occured while reading\n");
     errcode = 2;
