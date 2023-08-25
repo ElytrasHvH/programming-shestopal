@@ -16,13 +16,13 @@ char* input_file = NULL;
 char* output_file = strdup("./dist/output.txt");
 char* text=NULL;
 char* output_text = NULL;
-char* errstr = NULL;
+char* errstr = strdup("everything is ok\n");
 char* mat_str = NULL;
 int errcode = 0;
-int shift = 2;
 double* arr=NULL;
 double** mat=NULL;
 double det=0;
+size_t shift = 2;
 size_t arr_size=0;
 size_t mat_size=0;
 size_t mat_str_len = 0;
@@ -95,6 +95,20 @@ if((size_t)arr[0]*(size_t)arr[0]!=arr_size-(size_t)shift) {
     errcode = 4;
     break;
 }
+
+mat=convert_array_to_mat(arr+shift,arr_size-shift,&mat_size);//pointer and size being shifted to exclude size of matrix and it's values from end matrix
+det = get_determinant(mat,mat_size);
+
+mat_str = write_double_mat_to_string(mat, mat_size, mat_size, 2);
+
+mat_str_len=strlen(mat_str);
+det_len = (size_t)snprintf(NULL, 0, "%.2f\n", det);
+prefix_len = strlen("Determinant of the given matrix is: ");
+total_len = det_len+prefix_len+mat_str_len+strlen("Input matrix:\n");
+
+output_text=create_string(total_len);
+(void)sprintf(output_text,"Input matrix:\n%sDeterminant of the given matrix is: %.2f\n",mat_str,det); 
+
 break;
 }
 

@@ -18,20 +18,19 @@
 
 
 int main(int argc, char** argv) {
-
 printf("\n\tАвтор: Шестопал Дмитро Олексійович КН922Б.\n\t\tЛабораторна №14 Взаємодія з файлами\n\tЗавдання: Визначити детермінант матриці якщо він існує.\n");
 
 char* input_file = NULL;
 char* output_file = strdup("./dist/output.txt");
 char* text=NULL;
 char* output_text = NULL;
-char* errstr = NULL;
+char* errstr = strdup("everything is ok\n");
 char* mat_str = NULL;
 int errcode = 0;
-int shift = 2;
 double* arr=NULL;
 double** mat=NULL;
 double det=0;
+size_t shift = 2;
 size_t arr_size=0;
 size_t mat_size=0;
 size_t mat_str_len = 0;
@@ -104,6 +103,20 @@ if((size_t)arr[0]*(size_t)arr[0]!=arr_size-(size_t)shift) {
     errcode = 4;
     break;
 }
+
+mat=convert_array_to_mat(arr+shift,arr_size-shift,&mat_size);//pointer and size being shifted to exclude size of matrix and it's values from end matrix
+det = get_determinant(mat,mat_size);
+
+mat_str = write_double_mat_to_string(mat, mat_size, mat_size, 2);
+
+mat_str_len=strlen(mat_str);
+det_len = (size_t)snprintf(NULL, 0, "%.2f\n", det);
+prefix_len = strlen("Determinant of the given matrix is: ");
+total_len = det_len+prefix_len+mat_str_len+strlen("Input matrix:\n");
+
+output_text=create_string(total_len);
+(void)sprintf(output_text,"Input matrix:\n%sDeterminant of the given matrix is: %.2f\n",mat_str,det); 
+
 break;
 }
 
@@ -146,3 +159,108 @@ return 0;
 13.1 Якщо була помилка щодо файлу вводу/виводу - Виводимо строку з помилкою у термінал.
 13.2 Якщо була будь-яка інша помилка - Виводимо строку з помилкою у консоль за записуємо її у файл
 14. Звільнюємо пам`ять та закриваємо программу
+
+Усі функції окрім handle_input та handle_output мають юніт тести.
+Функції handle_input та handle_output були зроблені лише задля того щоб зменьшити когнітивну важкість програми.
+
+valgrind log:
+
+==672066== Memcheck, a memory error detector
+==672066== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==672066== Using Valgrind-3.19.0 and LibVEX; rerun with -h for copyright info
+==672066== Command: ./dist/main.bin ./assets/input.txt ./dist/output.txt
+==672066== Parent PID: 672054
+==672066== 
+==672066== 
+==672066== HEAP SUMMARY:
+==672066==     in use at exit: 0 bytes in 0 blocks
+==672066==   total heap usage: 89 allocs, 89 frees, 35,629 bytes allocated
+==672066== 
+==672066== All heap blocks were freed -- no leaks are possible
+==672066== 
+==672066== For lists of detected and suppressed errors, rerun with: -s
+==672066== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+Приклад використання:
+
+1. Без аргументів:
+┌──(elytras㉿Elytras)-[~/programming-shestopal/lab14]
+└─$ ./dist/main.bin                  
+
+        Автор: Шестопал Дмитро Олексійович КН922Б.
+                Лабораторна №14 Взаємодія з файлами
+        Завдання: Визначити детермінант матриці якщо він існує.
+No input file provided
+Give a file location (1 line, up to 8192 characters):
+./assets/input.txt
+No output file destination & name provided
+Do you want to proceed with the default location? (Y/N)
+y
+Input matrix:
+[        3.00   4.00    5.00    -4.00   ]
+[        2.00   5.00    6.00     0.00   ]
+[        4.00   5.00    2.00     2.40   ]
+[       -5.00   6.00    4.00     3.00   ]
+
+Determinant of the given matrix is: 666.00
+
+(файл збережено у ./dist/output.txt)
+2. Лише з вхідним файлом:
+
+┌──(elytras㉿Elytras)-[~/programming-shestopal/lab14]
+└─$ ./dist/main.bin ./assets/input.txt                  
+
+        Автор: Шестопал Дмитро Олексійович КН922Б.
+                Лабораторна №14 Взаємодія з файлами
+        Завдання: Визначити детермінант матриці якщо він існує.
+No output file destination & name provided
+Do you want to proceed with the default location? (Y/N)
+y
+Input matrix:
+[        3.00   4.00    5.00    -4.00   ]
+[        2.00   5.00    6.00     0.00   ]
+[        4.00   5.00    2.00     2.40   ]
+[       -5.00   6.00    4.00     3.00   ]
+
+Determinant of the given matrix is: 666.00
+            
+(файл збережено у ./dist/output.txt)                                   
+3. З заданим вхідним та вихідніми файлами:
+
+┌──(elytras㉿Elytras)-[~/programming-shestopal/lab14]
+└─$ ./dist/main.bin ./assets/input.txt ./dist/output.txt
+
+        Автор: Шестопал Дмитро Олексійович КН922Б.
+                Лабораторна №14 Взаємодія з файлами
+        Завдання: Визначити детермінант матриці якщо він існує.
+Input matrix:
+[        3.00   4.00    5.00    -4.00   ]
+[        2.00   5.00    6.00     0.00   ]
+[        4.00   5.00    2.00     2.40   ]
+[       -5.00   6.00    4.00     3.00   ]
+
+Determinant of the given matrix is: 666.00
+       
+(файл збережено у ./dist/output.txt)                                    
+4. Не заданий вихідний файл з не стандартним (за програмою) вихідом
+
+┌──(elytras㉿Elytras)-[~/programming-shestopal/lab14]
+└─$ ./dist/main.bin ./assets/input.txt                  
+
+        Автор: Шестопал Дмитро Олексійович КН922Б.
+                Лабораторна №14 Взаємодія з файлами
+        Завдання: Визначити детермінант матриці якщо він існує.
+No output file destination & name provided
+Do you want to proceed with the default location? (Y/N)
+n
+Give output file destination (1 line, up to 8192 characters):
+./dist/nondef_output.txt
+Input matrix:
+[        3.00   4.00    5.00    -4.00   ]
+[        2.00   5.00    6.00     0.00   ]
+[        4.00   5.00    2.00     2.40   ]
+[       -5.00   6.00    4.00     3.00   ]
+
+Determinant of the given matrix is: 666.00
+               
+(файл збережено у ./dist/output.txt)

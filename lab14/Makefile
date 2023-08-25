@@ -36,7 +36,7 @@ check:
 doxy:
 	doxygen Doxyfile  
 leak-check: clean prep compile
-	valgrind $(V_FLAGS) --log-file=dist/valgrind.log cat ./assets/input.txt | ./dist/main.bin 
+	valgrind $(V_FLAGS) --log-file=dist/valgrind.log ./dist/main.bin ./assets/input.txt ./dist/output.txt 
 leak-check-test: clean prep compile test
 	valgrind $(V_FLAGS) --log-file=dist/valgrind.log ./dist/test.bin
 #--xml=yes --xml-file=dist/valgrind.xml
