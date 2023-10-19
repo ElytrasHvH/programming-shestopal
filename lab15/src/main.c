@@ -12,7 +12,7 @@
 #define OUTPUT_SIZE SIZE*4096
 
 int main(int argc, char* argv[]) {
-printf("\n\tАвтор: Шестопал Дмитро Олексійович КН922Б.\n\t\tЛабораторна №15 Структуровані типи даних\n\tЗавдання: \n");
+printf("\n\tАвтор: Шестопал Дмитро Олексійович КН922Б.\n\t\tЛабораторна №15 Структуровані типи даних\n\tЗавдання: \n\n");
     workcollectionmember_s list[SIZE] = {0};
     char* input_file = NULL;
     char* output_file = strdup("./dist/output.txt");
@@ -25,7 +25,7 @@ printf("\n\tАвтор: Шестопал Дмитро Олексійович К�
     size_t input_str_len = 0;
     size_t output_str_len = 0;
     bitmap_t map = (bitmap_t)calloc(SIZE , sizeof(bool));
-    searchdata_u data = {.bool_value = true} ; 
+    searchdata_u data = {.bool_value = true}; 
     field_t field = HAS_PRACTICAL_TASKS;
     
     for (size_t i = 0; i<SIZE; i++) {
@@ -58,9 +58,10 @@ printf("\n\tАвтор: Шестопал Дмитро Олексійович К�
 
     sort_struct(list,SIZE,&data,field);
     
-    for(i = 0; i<SIZE;i++) {
+    for(int i = 0; i<SIZE;i++) {
         printf("LAB #%u is now %d\n",list[i].num,i);
     }
+    printf("\n");
     handle_output(output_str,output_file,errstr,errcode);
 
 return 0;
