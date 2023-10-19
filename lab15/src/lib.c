@@ -963,7 +963,6 @@ bool split_string_into_words(const char* str, char*** words, size_t* num_words, 
 //   - size: A pointer to a size_t variable that will hold the number of elements in the array.
 // Returns:
 //   - True if the parsing and conversion were successful, false otherwise.
-
 bool parse_string(const char* str, double** arr, size_t* size) {
 if(arr==NULL||size==NULL||str==NULL) {
     return false;
@@ -1830,7 +1829,7 @@ bool search_field(const workcollectionmember_s* member ,bitmap_t map ,const size
 /* 
  * * * * * * * * * * * Order of data * * * * * * * * * * *
  * Frequency: An enum value between 0 and 4 (1-3).       *
- * LabWorkType: An enum value between 0 and 6 (1-5).     *
+ * LabWorkType: An enum value between 0 and 5 (1-4).     *
  * Professor’s Surname: A string of up to 255 characters.*
  * Subject Name: A string of up to 255 characters.       *
  * Has Variation: A boolean value (0 or 1).              *
@@ -1864,7 +1863,7 @@ void parse_data(const char* input_str, char** errstr, int* errcode, workcollecti
     for(size_t struct_num = 0;struct_num<struct_count;struct_num++) {
         // Parse and assign values to the struct members based on word indices
         struct_ptr[struct_num].base.frequency=((word_to_double(words[struct_num*10])) > 0 && (size_t)(word_to_double(words[struct_num*10]))<4 ) ? (frequency_t)word_to_double(words[struct_num*10]): 0;
-        struct_ptr[struct_num].lab_work.type=((word_to_double(words[struct_num*10+1])) > 0 && (size_t)(word_to_double(words[struct_num*10+1]))<6 ) ? (labwork_t)word_to_double(words[struct_num*10+1]): 0;
+        struct_ptr[struct_num].lab_work.type=((word_to_double(words[struct_num*10+1])) > 0 && (size_t)(word_to_double(words[struct_num*10+1]))<5 ) ? (labwork_t)word_to_double(words[struct_num*10+1]): 0;
         strncpy(struct_ptr[struct_num].base.subject.prof_surname,words[struct_num*10+2],255);
         struct_ptr[struct_num].base.subject.prof_surname[255]='\0';
         strncpy(struct_ptr[struct_num].base.subject.subject_name,words[struct_num*10+3],255);
@@ -1879,6 +1878,7 @@ void parse_data(const char* input_str, char** errstr, int* errcode, workcollecti
         // Synchronize the workcollectionmember_s
         sync_work_collection_member((workcollectionmember_s* const)&struct_ptr[struct_num]);
     }
+    destroy_mat((void**)words,num_words);
 }
 
 // This function sets an error code and error message. It takes pointers to an error code, an error message string,
@@ -1927,13 +1927,13 @@ char* work_collection_member_to_string(const workcollectionmember_s* const membe
     char problem_str[50] = {0};   // Buffer to store problem-related information
 
     // Arrays for converting enum values to human-readable strings
-    const char* frequency_string[NUM_FREQUENCIES] = {
+    const char* const frequency_string[NUM_FREQUENCIES] = {
         [NEVER] = "Never",
         [ONCE_A_WEEK] = "Once a week",
         [ONCE_A_MODULE] = "Once a module",
         [ONCE_A_SEMESTER] = "Once a semester"
     };
-    const char* lab_work_type_string[NUM_LAB_WORK_TYPES] = {
+    const char* const lab_work_type_string[NUM_LAB_WORK_TYPES] = {
         [NO_TYPE] = "No type",
         [WRITE_A_PROGRAM] = "Write a program",
         [CALCULATE] = "Calculate",
