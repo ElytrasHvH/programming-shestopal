@@ -27,11 +27,6 @@ printf("\n\tАвтор: Шестопал Дмитро Олексійович К�
     bitmap_t map = (bitmap_t)calloc(SIZE , sizeof(bool));
     searchdata_u data = {.bool_value = true}; 
     field_t field = HAS_PRACTICAL_TASKS;
-    
-    for (size_t i = 0; i<SIZE; i++) {
-        list[i].num += i;
-        sync_work_collection_member(&list[i]);
-    }
 
     handle_args(argc,argv,&input_file,&output_file,&errstr,&errcode);
 
@@ -55,8 +50,7 @@ printf("\n\tАвтор: Шестопал Дмитро Олексійович К�
     } else {
         printf("No match in the given data!\n");
     }
-
-    sort_struct(list,SIZE,&data,field);
+    sort_struct(list,SIZE,field);
     
     for(int i = 0; i<SIZE;i++) {
         printf("LAB #%u is now %d\n",list[i].num,i);

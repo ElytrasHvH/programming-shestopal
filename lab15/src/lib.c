@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #ifdef _WIN32
 #define random() rand()
@@ -235,10 +236,12 @@ void destroy_mat(void **matrix, size_t size) {
             if (matrix[i] != NULL) {
                 // Free the memory associated with each row (1D array) of the matrix.
                 free(matrix[i]);
+                matrix[i]=NULL;
             }
         }
         // Free the memory associated with the array of row pointers (matrix).
         free(matrix);
+        matrix=NULL;
     }
 }
 
@@ -1719,29 +1722,6 @@ void handle_output(char* output_text, char* output_file, char* errstr, int errco
     }
 }
 
-// Function to sync fields of the children structs to parent struct
-// Parameters:
-// - work_collection_member: the pointer to a struct which has parent and 2 child classes in it
-// * base struct is the struct it takes from to syncronize
-// * work_collection_member is an attempt to make a class
-void sync_work_collection_member(workcollectionmember_s* const member) {
-    // Sync fields from lab_work.base
-    member->lab_work.base.has_variation = member->base.has_variation;
-    strcpy(member->lab_work.base.theme, member->base.theme);
-    member->lab_work.base.problem_count = member->base.problem_count;
-    strcpy(member->lab_work.base.subject.prof_surname, member->base.subject.prof_surname);
-    strcpy(member->lab_work.base.subject.subject_name, member->base.subject.subject_name);
-    member->lab_work.base.frequency = member->base.frequency;
-
-    // Sync fields from work_type.base
-    member->work_type.base.has_variation = member->base.has_variation;
-    strcpy(member->work_type.base.theme, member->base.theme);
-    member->work_type.base.problem_count = member->base.problem_count;
-    strcpy(member->work_type.base.subject.prof_surname, member->base.subject.prof_surname);
-    strcpy(member->work_type.base.subject.subject_name, member->base.subject.subject_name);
-    member->work_type.base.frequency = member->base.frequency;
-}
-
 // The bitmap_t must have the same number of elements as the collection of workcollectionmember_s.
 // For example, if there are SIZE members in the collection, then the size of the bitmap_t should also be SIZE.
 bool search_field(const workcollectionmember_s* member ,bitmap_t map ,const size_t size ,const field_t field ,const searchdata_u* data) {
@@ -1824,7 +1804,7 @@ bool search_field(const workcollectionmember_s* member ,bitmap_t map ,const size
 }
 
 // This function parses input data and populates a collection of workcollectionmember_s structures.
-// It expects a comma or newline-separated input string, and it fills in the struct_ptr array with parsed data.
+// It expects a comma or(and) newline-separated input string, and it fills in the struct_ptr array with parsed data.
 // If there are any errors during parsing, it sets an error code and error message.
 /* 
  * * * * * * * * * * * Order of data * * * * * * * * * * *
@@ -1838,7 +1818,7 @@ bool search_field(const workcollectionmember_s* member ,bitmap_t map ,const size
  * Has Practical Tasks: A boolean value (0 or 1).        *
  * Has Test Questions: A boolean value (0 or 1).         *
  * Is Possible At Home: A boolean value (0 or 1).        *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  */
 void parse_data(const char* input_str, char** errstr, int* errcode, workcollectionmember_s* struct_ptr, size_t size) {
     char** words = NULL;    // Array to store words extracted from the input string
@@ -1875,8 +1855,7 @@ void parse_data(const char* input_str, char** errstr, int* errcode, workcollecti
         struct_ptr[struct_num].work_type.has_practical_tasks=(!(fabs(fmod(word_to_double(words[struct_num*10+7]),1))>0) && (word_to_double(words[struct_num*10+7])) > -1 && (word_to_double(words[struct_num*10+7]))<2 ) ? (bool)word_to_double(words[struct_num*10+7]): 0;
         struct_ptr[struct_num].work_type.has_test_questions=(!(fabs(fmod(word_to_double(words[struct_num*10+8]),1))>0) && (word_to_double(words[struct_num*10+8])) > -1 && (word_to_double(words[struct_num*10+8]))<2 ) ? (bool)word_to_double(words[struct_num*10+8]): 0;
         struct_ptr[struct_num].lab_work.is_possible_at_home=(!(fabs(fmod(word_to_double(words[struct_num*10+9]),1))>0) && (word_to_double(words[struct_num*10+9])) > -1 && (word_to_double(words[struct_num*10+9]))<2 ) ? (bool)word_to_double(words[struct_num*10+9]): 0;
-        // Synchronize the workcollectionmember_s
-        sync_work_collection_member((workcollectionmember_s* const)&struct_ptr[struct_num]);
+        struct_ptr[struct_num].num=struct_num;
     }
     destroy_mat((void**)words,num_words);
 }
@@ -1894,29 +1873,23 @@ void set_error(int* const errcode, char** errstr, const int code, const char* er
     *errstr = strdup(errmsg);
 }
 
-// This function performs a case-insensitive comparison between two strings. It takes two pointers to strings (str1 and str2).
-// It first checks if the lengths of the two strings are different; if so, it returns false.
-// Then, it iterates through the characters of the strings, converting each character to lowercase using tolower(),
-// and compares them. If any characters are different, it returns false. If all characters match, it returns true,
-// indicating that the two strings are equal (ignoring case).
-bool cncasestrcmp(const char* str1, const char* str2) {
-    size_t str_len = strlen(str1);  // Calculate the length of the first string
-
-    // If the lengths of the two strings are different, they cannot be equal
-    if (str_len != strlen(str2)) {
-        return false;
-    }
-
-    // Iterate through the characters of the strings
-    for (size_t i = 0; str1[i]; i++) {
-        // Compare characters after converting them to lowercase
-        if (tolower(str1[i]) != tolower(str2[i])) {
-            return false;  // Return false if a mismatch is found
+// This function performs case insensetive string comparison
+// It accepts two arguments, both of which are pointers to null-terminated strings (str1 and str2).
+// The function iterates through each character in the strings simultaneously. For each pair of characters:
+//     - It converts the characters to lowercase using the tolower() function.
+//     - It compares the lowercase characters for equality.
+// The iteration continues until it encounters a pair of characters that are not equal or until it reaches the end of one or both strings.
+// If it finds a pair of characters that are not equal, it returns the difference between their ASCII values.
+// If it reaches the end of both strings without finding any unequal characters (meaning the strings are equal ignoring case), it returns 0.
+int stricmp(const char* str1, const char* str2) {
+    // Iterate through and compare the characters
+    while(*str1 && *str2 && (tolower((unsigned char)*str1) == tolower((unsigned char)*str2)))
+        {
+            str1++;
+            str2++;
         }
-    }
-
-    // If no mismatches were found, the strings are equal (ignoring case)
-    return true;
+    //return the difference between last 2 compared elements.
+    return tolower((unsigned char)*str1) - tolower((unsigned char)*str2);
 }
 
 // This function writes information about a workcollectionmember_s in a string.
@@ -1986,27 +1959,30 @@ char* work_collection_member_to_string(const workcollectionmember_s* const membe
 // - Zero if p_struct1's field is equal to p_struct2's field.
 // - Positive if p_struct1's field is greater than p_struct2's field.
 int compare_by_field(const workcollectionmember_s* const p_struct1, const workcollectionmember_s* const p_struct2, field_t type) {
-
+    int stricmp_val;
     switch (type)
     {
     case FREQUENCY:
         // Compare by frequency value
-        return (int)p_struct1->lab_work.base.frequency - (int)p_struct2->lab_work.base.frequency;
+        return (int)p_struct1->base.frequency - (int)p_struct2->base.frequency;
     case LABWORKTYPE:
         // Compare by lab work type value
         return (int)p_struct1->lab_work.type - (int)p_struct2->lab_work.type;
     case PROF_SURNAME:
         // Compare by professor surname string
-        return strcmp(p_struct1->base.subject.prof_surname, p_struct2->base.subject.prof_surname); 
+        stricmp_val = stricmp(p_struct1->base.subject.prof_surname, p_struct2->base.subject.prof_surname);
+        return (stricmp_val==0) ? strcmp(p_struct1->base.subject.prof_surname, p_struct2->base.subject.prof_surname) : stricmp_val;
     case SUBJECT_NAME:
         // Compare by subject name string
-        return strcmp(p_struct1->base.subject.subject_name, p_struct2->base.subject.subject_name);
+        stricmp_val = stricmp(p_struct1->base.subject.subject_name, p_struct2->base.subject.subject_name);
+        return (stricmp_val==0) ? strcmp(p_struct1->base.subject.subject_name, p_struct2->base.subject.subject_name) : stricmp_val;
     case HAS_VARIATION:
         // Compare by has_variation boolean
         return (int)p_struct1->base.has_variation - (int)p_struct2->base.has_variation;
     case THEME:
         // Compare by theme string
-        return strcmp(p_struct1->base.theme, p_struct2->base.theme);
+        stricmp_val = stricmp(p_struct1->base.theme, p_struct2->base.theme);
+        return (stricmp_val==0) ? strcmp(p_struct1->base.theme, p_struct2->base.theme) : stricmp_val;
     case PROBLEM_COUNT:
         // Compare by problem_count unsigned int
         return (int)p_struct1->base.problem_count - (int)p_struct2->base.problem_count;
@@ -2035,115 +2011,21 @@ void swap(void* arr, size_t i, size_t j, size_t size) {
     memcpy((char*)arr + j*size, temp, size);  // Replace the element at index j with the element stored in the temporary variable
 }
 
-
-// A sorting function that selects an appropriate sorting algorithm based on the field type and sorts an array of workcollectionmember_s accordingly.
-// It takes a pointer to an array of workcollectionmember_s, the count of elements in the array, a pointer to searchdata_u data, and a field_t enum value as input.
-// The function first checks if the field type is valid. If it's NONE, it does nothing.
-// If the field type is PROF_SURNAME, SUBJECT_NAME, or THEME, it calls the specialized sorting function for string fields.
-// For other field types, it calls the generic sorting function for numeric and boolean fields.
-void sort_struct(workcollectionmember_s* const member, size_t member_count, const searchdata_u* const data, const field_t type) {
-    // Check if the field type is valid
-    if (type == NONE) {
-        // Invalid field type, do nothing
-        return;
-    }
-
-    // Check if the field type is PROF_SURNAME, SUBJECT_NAME, or THEME
-    if (type == PROF_SURNAME || type == SUBJECT_NAME || type == THEME) {
-        // Call the specialized sorting function for string fields
-        sort_struct_string(member, member_count, data, type);
-    } else {
-        // Call the generic sorting function for numeric and boolean fields
-        sort_struct_no_string(member, member_count, data, type);
-    }
-}
-
-// A sorting function that uses the bubble sort algorithm to sort an array of workcollectionmember_s based on numeric and boolean fields.
-// It takes a pointer to an array of workcollectionmember_s, the count of elements in the array, a pointer to searchdata_u data, and a field_t enum value as input.
+// A sorting function that uses the bubble sort algorithm to sort an array of workcollectionmember_s.
+// It takes a pointer to an array of workcollectionmember_s, the count of elements in the array, and a field_t enum value as input.
 // The function iterates through the array using nested loops and compares adjacent elements based on the specified field type.
-// If the comparison result matches the unsigned_int_value in the searchdata_u data and is not equal to zero, it swaps the elements to move the matching element to the front.
-// Additionally, if the comparison result is zero (indicating equality), it compares the 'num' field of the workcollectionmember_s and swaps them if they are out of order by their index.
-void sort_struct_no_string(workcollectionmember_s* const member, size_t member_count, const searchdata_u* const data, const field_t type) {
+void sort_struct(workcollectionmember_s* const member,const size_t member_count, const field_t type) {
     for (size_t i = member_count - 1; i > 0; i--) {
         for (size_t j = 0; j < i; j++) {
-            int cmp = compare_by_field(&member[j], &member[j+1], type);
-            
-            // Check if the comparison result matches the unsigned_int_value and is not zero
-            if (cmp == data->unsigned_int_value && cmp != 0) {
+            int cmpval = compare_by_field(&member[j], &member[j+1], type);
+            // Check if the comparison result flags that second member is "larger" then first
+            if (cmpval < 0) {
                 // Swap the elements to move the matching element to the front
                 swap(member, j, j+1,sizeof(workcollectionmember_s));
             }
-            
             // Check if the elements have the same field values and need to be sorted by 'num'
-            if (cmp == 0 && member[j].num > member[j+1].num) {
+            if (cmpval == 0 && member[j].num > member[j+1].num) {
                 // Swap the elements to maintain the order based on 'num'
-                swap(member, j, j+1,sizeof(workcollectionmember_s));
-            }
-        }
-    }
-}
-
-// A helper function to compare two workcollectionmember_s based on string fields in a case-insensitive manner.
-// It takes a pointer to an array of workcollectionmember_s, the indices of two elements (mem_num1 and mem_num2) to be compared,
-// a pointer to searchdata_u data containing the string to compare against, and a field_t enum value specifying the field to compare.
-// The function uses a switch statement to select the appropriate string field to compare based on the field_t.
-// It performs case-insensitive comparisons using the cncasestrcmp function and assigns the comparison results to cmp1 and cmp2.
-// If the first element (mem_num1) is (case-insensitively) the same as the data's string, it returns 1.
-// If the second element (mem_num2) is (case-insensitively) the same as the data's string, it returns -1.
-// If neither element matches the data's string, it returns 0.
-// If an invalid field_t is provided, it returns -2.
-int compare_by_field_string(workcollectionmember_s* const member, size_t mem_num1, size_t mem_num2, const searchdata_u* const data, const field_t type) {
-    bool cmp1 = false;
-    bool cmp2 = false;
-
-    switch (type) {
-    case PROF_SURNAME:
-        cmp1 = cncasestrcmp(member[mem_num1].base.subject.prof_surname, data->string);
-        cmp2 = cncasestrcmp(member[mem_num2].base.subject.prof_surname, data->string);
-        break;
-    case SUBJECT_NAME:
-        cmp1 = cncasestrcmp(member[mem_num1].base.subject.subject_name, data->string);
-        cmp2 = cncasestrcmp(member[mem_num2].base.subject.subject_name, data->string);
-        break;
-    case THEME:
-        cmp1 = cncasestrcmp(member[mem_num1].base.theme, data->string);
-        cmp2 = cncasestrcmp(member[mem_num2].base.theme, data->string);
-        break;
-    default:
-        return -2;  // Invalid field_t
-    }
-
-    // If the first element (mem_num1) matches the data's string (case-insensitively)
-    if (cmp1 > cmp2) {
-        return 1;
-    }
-    // If the second element (mem_num2) matches the data's string (case-insensitively)
-    if (cmp2 > cmp1) {
-        return -1;
-    }
-    // If neither element matches the data's string (case-insensitively)
-    return 0;
-}
-// A sorting function that uses the bubble sort algorithm to sort an array of workcollectionmember_s based on string fields.
-// It takes a pointer to an array of workcollectionmember_s, the count of elements in the array, a pointer to searchdata_u data containing the string to compare against,
-// and a field_t enum value specifying the field to compare.
-// The function iterates through the array using nested loops and compares adjacent elements based on the specified field type.
-// It first uses the generic compare_by_field function to perform numeric and boolean field comparisons.
-// If the comparison result is zero (indicating equality), it additionally checks if the 'num' field of the workcollectionmember_s is out of order by their index and swaps them if needed.
-// If the comparison result is not zero, it calls the compare_by_field_string function to perform case-insensitive string comparisons and swaps the elements accordingly.
-void sort_struct_string(workcollectionmember_s* const member, size_t member_count, const searchdata_u* const data, const field_t type) {
-    for (size_t i = member_count - 1; i > 0; i--) {
-        for (size_t j = 0; j < i; j++) {
-            int cmp = compare_by_field(&member[j], &member[j+1], type);
-
-            // Check if the elements have the same field values and need to be sorted by 'num'
-            if (cmp == 0 && member[j].num > member[j+1].num) {
-                swap(member, j, j+1,sizeof(workcollectionmember_s));
-                continue;
-            }
-
-            // Check if the elements need to be sorted based on string comparisons (case-insensitive)
-            if (cmp != 0 && compare_by_field_string(member, j, j+1, data, type) > 0) {
                 swap(member, j, j+1,sizeof(workcollectionmember_s));
             }
         }

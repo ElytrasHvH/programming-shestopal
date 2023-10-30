@@ -9,6 +9,8 @@
 #include <unistd.h>
 
 #define EPSILON 1e-7
+#define SIZE 10
+
 
 // Test case for the create_int_arr function
 START_TEST(test_create_int_arr)
@@ -1036,6 +1038,169 @@ START_TEST(test_write_to_file)
 }
 END_TEST
 
+START_TEST(test_search_field)
+{
+    //It is a big function. only one test (though it's not proper to do like it)
+    workcollectionmember_s member[SIZE] = {0}; 
+    bitmap_t map = NULL;
+    size_t size = SIZE;
+    size_t match_count = 0;
+    field_t field = FREQUENCY;
+    searchdata_u data;
+    data.frequency_value = 3; 
+
+    for(int i = 0; i < SIZE; i++) {
+        member[i].base.frequency = i % (NUM_FREQUENCIES-1) + 1;
+    }
+
+    map = malloc(SIZE*sizeof(bool));
+    if (NULL==map) {
+        (void)fprintf(stdout,"Buy more ram lol!");
+    }
+    bool result = search_field(member, map, size, field, &data);
+
+    cq_assert_int_eq(1,result);
+
+    // test bitmap and populate match_count (which will be usefull if we pass this part of the test)
+    for(int i = 0; i < SIZE; i++) {
+        if(i % (NUM_FREQUENCIES-1) + 1 == data.frequency_value) {
+            ck_assert_int_eq(map[i], true);
+            match_count++;
+        } else {
+            ck_assert_int_eq(map[i], false);
+        }
+    }
+    ck_assert_int_eq(3, match_count);
+
+    free(map);
+}
+END_TEST
+
+START_TEST(test_parse_data)
+{
+
+    const char* input_str = "1,2,Smith,Physics,0,Quantum Mechanics,10,1,0,1\n"
+                            "2,3,Jones,Chemistry,1,Thermodynamics,20,0,1,0"; 
+    char* errstr = NULL;
+    int errcode = 0;
+    workcollectionmember_s struct_ptr[2] = {0}; 
+    size_t size = 2; 
+
+    parse_data(input_str, &errstr, &errcode, struct_ptr, size);
+
+    // assert correct parsing for first member
+    ck_assert_int_eq(errcode, 0);
+    ck_assert_ptr_null(errstr);
+    ck_assert_int_eq(struct_ptr[0].base.frequency, 1);
+    ck_assert_int_eq(struct_ptr[0].lab_work.type, 2);
+    ck_assert_str_eq(struct_ptr[0].base.subject.prof_surname, "Smith");
+    ck_assert_str_eq(struct_ptr[0].base.subject.subject_name, "Physics");
+    ck_assert_int_eq(struct_ptr[0].base.has_variation, 0);
+    ck_assert_str_eq(struct_ptr[0].base.theme, "Quantum Mechanics");
+    ck_assert_int_eq(struct_ptr[0].base.problem_count, 10);
+    ck_assert_int_eq(struct_ptr[0].work_type.has_practical_tasks, 1);
+    ck_assert_int_eq(struct_ptr[0].work_type.has_test_questions, 0);
+    ck_assert_int_eq(struct_ptr[0].lab_work.is_possible_at_home, 1);
+
+    // assert correct parsing for not first member
+    ck_assert_int_eq(errcode, 0);
+    ck_assert_ptr_null(errstr);
+    ck_assert_int_eq(struct_ptr[1].base.frequency, 2);
+    ck_assert_int_eq(struct_ptr[1].lab_work.type, 3);
+    ck_assert_str_eq(struct_ptr[1].base.subject.prof_surname, "Jones");
+    ck_assert_str_eq(struct_ptr[1].base.subject.subject_name, "Chemistry");
+    ck_assert_int_eq(struct_ptr[1].base.has_variation, 1);
+    ck_assert_str_eq(struct_ptr[1].base.theme, "Thermodynamics");
+    ck_assert_int_eq(struct_ptr[1].base.problem_count, 20);
+    ck_assert_int_eq(struct_ptr[1].work_type.has_practical_tasks, 0);
+    ck_assert_int_eq(struct_ptr[1].work_type.has_test_questions, 1);
+    ck_assert_int_eq(struct_ptr[1].lab_work.is_possible_at_home, 0);
+
+}
+END_TEST
+
+START_TEST(test_compare_by_field)
+{
+    workcollectionmember_s list[2] = {0};
+    int result[11]={0};
+    
+    list[0].base.frequency = ONCE_A_MODULE;
+    list[1].base.frequency = ONCE_A_SEMESTER;
+    result[0]=(int)list[0].base.frequency-(int)list[1].base.frequency;
+
+    list[0].base.has_variation = false;
+    list[1].base.has_variation = true;
+    result[1]=(int)list[0].base.has_variation-(int)list[1].base.has_variation;
+
+    list[0].base.problem_count = 10;
+    list[1].base.problem_count = 35;
+    result[2]=(int)list[0].base.problem_count-(int)list[1].base.problem_count;
+
+    strcpy(list[0].base.theme,"Thermodynamics");
+    strcpy(list[1].base.theme,"Quantum Mechanics");
+    result[3]=stricmp(list[0].base.theme,list[1].base.theme);
+
+    strcpy(list[0].base.subject.prof_surname,"Jones");
+    strcpy(list[1].base.subject.prof_surname,"Smith");
+    result[4]=stricmp(list[0].base.subject.prof_surname,list[1].base.subject.prof_surname);
+
+    strcpy(list[0].base.subject.subject_name,"Chemistry");
+    strcpy(list[1].base.subject.subject_name,"Physics");
+    result[5]=stricmp(list[0].base.subject.subject_name,list[1].base.subject.subject_name);
+
+    list[0].lab_work.is_possible_at_home = false;
+    list[1].lab_work.is_possible_at_home = true;
+    result[6]=(int)list[0].lab_work.is_possible_at_home-(int)list[1].lab_work.is_possible_at_home;
+
+    list[0].lab_work.type = DO_EXPERIMENT;
+    list[1].lab_work.type = CREATE_A_SCHEME;
+    result[7]=(int)list[0].lab_work.type-(int)list[1].lab_work.type; 
+
+    list[0].work_type.has_practical_tasks = true;
+    list[1].work_type.has_practical_tasks = false;
+    result[8]=(int)list[0].work_type.has_practical_tasks-(int)list[1].work_type.has_practical_tasks;
+
+    list[0].work_type.has_test_questions = false;
+    list[1].work_type.has_test_questions = true;
+    result[9]=(int)list[0].work_type.has_test_questions-(int)list[1].work_type.has_test_questions;
+
+    //Not used, but hey...
+    list[0].num = 1;
+    list[1].num = 2;
+    result[10]
+
+        for(int i = 1; i < FIELD_COUNT; i++) {
+            ck_assert_int_eq(compare_by_field(list,list+1,(field_t)i), result[i-1]);
+        }
+    }
+END_TEST
+
+START_TEST (test_sort_struct)
+{
+    int errcode = 0;     //unused
+    char* errstr = NULL; //unused
+                                     //1                    3                 6                      7                            5            4                    2
+    const char* input_str = "1,1,A,A,0,A,1,0,0,0\n1,1,A,A,0,A,2,0,0,0\n1,1,A,A,0,A,6,0,0,0\n1,1,A,A,0,A,9,0,0,0\n1,1,A,A,0,A,5,0,0,0\n1,1,A,A,0,A,3,0,0,0\n1,1,A,A,0,A,1,0,0,0\n";
+    char temp_str[2] = "";
+    const field_t field = PROBLEM_COUNT;
+    const size_t member_count = strlen(input_str) / strlen("1,1,A,A,0,A,1,0,0,0\n");
+    workcollectionmember_s members[member_count] = {0};
+
+    parse_data(input_str, &errstr, &errcode, members, member_count);
+    
+    // Expected result
+    const size_t expected[7]={0,6,1,5,4,2,3};
+
+    // Call the function to sort the data
+    sort_struct(members, member_count, field);
+
+    // Check that the result matches the expected output
+    for(int i = 0; i<member_count; i++){
+        ck_assert_uint_eq(expected[i],members[i].num);
+    }
+}
+END_TEST
+
 Suite *lib_suite(void)
 {
 	Suite *s;
@@ -1093,6 +1258,9 @@ Suite *lib_suite(void)
     tcase_add_test(tc_core, test_read_from_file);
     tcase_add_test(tc_core, test_directory_exists);
     tcase_add_test(tc_core, test_write_to_file);
+    tcase_add_test(tc_core, test_search_field);
+    tcase_add_test(tc_core, test_parse_data);
+    tcase_add_test(tc_core, test_compare_by_field);
     
 	suite_add_tcase(s, tc_core);
 

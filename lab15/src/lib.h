@@ -30,7 +30,7 @@ typedef enum frequency_t {
     NUM_FREQUENCIES
 } frequency_t;
 
-// Define the lab work types
+// Define the labwork_t enum
 typedef enum labwork_t {
     NO_TYPE,
     WRITE_A_PROGRAM,
@@ -40,13 +40,13 @@ typedef enum labwork_t {
     NUM_LAB_WORK_TYPES
 } labwork_t;
 
-// Define the subject struct
+// Define the subjectinfo_s struct
 typedef struct subjectinfo_s {
     char prof_surname[256];
     char subject_name[256];
 } subjectinfo_s;
 
-// Define the base_work struct
+// Define the basework_s struct
 typedef struct basework_s {
     char theme[1024];
     subjectinfo_s subject;
@@ -55,16 +55,14 @@ typedef struct basework_s {
     bool has_variation;
 } basework_s;
 
-// Define the work_type struct
+// Define the work_s struct
 typedef struct work_s {
-    basework_s base;
     bool has_test_questions;
     bool has_practical_tasks;
 } work_s;
 
-// Define the lab_work struct
+// Define the labwork_s struct
 typedef struct labwork_s {
-    basework_s base;
     labwork_t type;
     bool is_possible_at_home;
 } labwork_s;
@@ -89,7 +87,8 @@ typedef enum field_t {
     PROBLEM_COUNT,
     HAS_TEST_QUESTIONS,
     HAS_PRACTICAL_TASKS,
-    IS_POSSIBLE_AT_HOME
+    IS_POSSIBLE_AT_HOME,
+    FIELD_COUNT
 } field_t;
 
 typedef union searchdata_u {
@@ -618,18 +617,6 @@ void handle_args(int argc, char** argv,char** input_file,char** output_file,char
 void handle_output(char* output_text,char* output_file,char* errstr,int errcode);
 
 /**
- * @brief Синронизує поля структури-дитини з полями струкури-дорослого в середині workcollectionmember_s.
- *
- * Синронизує поля структури-дитини з полями струкури-дорослого в середині workcollectionmember_s.
- * Копіює значення з base структури у lab_work.base та work_type.base .
- *
- * @param member Вказівник на workcollectionmember_s
- *   - member.base структура є інформациєю яку копіюють для синхронізації.
- *   - member.lab_work.base та member.work_type.base є структурами які синхронизують.
- */
-void sync_work_collection_member(workcollectionmember_s* const member);
-
-/**
  * @brief Пошук співпадання поля у коллекції workcollectionmember_s з якоюсь інформацією та збереження на bitmap_t мапі.
  *
  * @param member Вказівник на першого участника коллекції workcollectionmember_s для пошуку.
@@ -659,9 +646,9 @@ void set_error(int* const errcode, char** errstr, const int code, const char* er
  *
  * @param str1 Перша строка
  * @param str2 Друга строка
- * @return Так якщо сроки рівні, інакше ні. 
+ * @return Різницю ASCII значень останніх порівнянних елементів строки.
  */
-bool cncasestrcmp(const char* str1, const char* str2);
+int stricmp(const char* str1, const char* str2);
 
 /**
  * @brief Записує workcollectionmember_s у строку.
@@ -710,50 +697,8 @@ void swap(void* arr, size_t i, size_t j, size_t size);
  *
  * @param member Вказівник на перший елемент массиву workcollectionmember_s.
  * @param member_count Кілкість елементів.
- * @param data Вказівник на об'єднання searchdata_u яке вийде вперед відсортованного массиву.
  * @param type Поле за яким сортуюють.
  */
-void sort_struct(workcollectionmember_s* const member, size_t member_count, const searchdata_u* const data, const field_t type);
-
-/**
- * @brief Сортування массиву workcollectionmember_s за полем (не строкою).
- *
- * Функція використовую сортування бульбашкою для сортування массиву workcollectionmember_s за заданним полем.
- * Порівнює значення заданних полей між собою та інформацією яку треба вивести вперед.
- * Якщо значення мають двох участників дорівнюють, вони відсортованні за їх 'num' полем.
- *
- * @param member Вказівник на початок маассиву яке буде відсортоване
- * @param member_count Кількість елементів.
- * @param data Вказівник на обєднанння з якого беруть інформацію участників з якой будуть виводити на початок.
- * @param type Поле за яким сортують.
- */
-void sort_struct_no_string(workcollectionmember_s* const member, size_t member_count, const searchdata_u* const data, const field_t type);
-/**
- * @brief Порівнює два workcollectionmember_s за полем (строковим).
- *
- * Функція порівнює два workcollectionmember_s за полем (строковим) з data строкою використовуючи як регістро-алежне так и незалежене порівняння.
- *
- * @param member Вказівник на коллекцію workcollectionmember_s.
- * @param mem_num1 Індекс першого участника коллекції.
- * @param mem_num2 Індекс другого участника коллекції.
- * @param data Вказівник на об'єднання з інформаціюєю (строкою).
- * @param type Поле (PROF_SURNAME, SUBJECT_NAME, або THEME) за яким порівнювати.
- * @return 1 якщо перше workcollectionmember_s таке саме як data string а second ні, -1 якщо дурге workcollectionmember_s таке саме як data string а перше ні, 0 якщо вони однакові (однаково дорівнюють або не дорівнюють data string).
- */
-int compare_by_field_string(workcollectionmember_s* const member, size_t mem_num1, size_t mem_num2, const searchdata_u* const data, const field_t type);
-
-/** 
- * @brief Сортування коллекції workcollectionmember_s за визначенним полем (та значенням).
- *
- * Сортування коллекції workcollectionmember_s методом бульбашки на основі поля-строки.
- * Виконує порівняння за допомогою compare_by_field щоб визначити чи строки є однаковими (з string.h) а потім виконує регістр-незалежзне порівняння використовуючи cncasestrcmp
- * Якщо вони є однаковими за значенням, вони сортуються за порядковим номером
- *
- * @param member Вказівник на коллекцію workcollectionmember_s яка сортирується.
- * @param member_count Розмір коллекції.
- * @param data Вказівник на об'єднання, яке містить інформацію яка якщо знайдена та буде виведена вперед сортованного массиву.
- * @param type Поле за яким буде відсортован (PROF_SURNAME, SUBJECT_NAME, або THEME).
- */
-void sort_struct_string(workcollectionmember_s* const member, size_t member_count, const searchdata_u* const data, const field_t type);
+void sort_struct(workcollectionmember_s* const member, size_t member_count, const field_t type);
 
 #endif
